@@ -1,0 +1,2 @@
+MainPackage=C:\Users\Kyle\documents\visual studio 2013\Projects\SunovionCompliance\SunovionCompliance\SunovionCompliance.Windows\bin\x86\Release\SunovionCompliance.Windows_1.0.0.1_Bundle\SunovionCompliance.Windows_1.0.0.1_x86.appx
+SymbolPackage=C:\Users\Kyle\documents\visual studio 2013\Projects\SunovionCompliance\SunovionCompliance\SunovionCompliance.Windows\AppPackages\SunovionCompliance.Windows_1.0.0.1_Test\SunovionCompliance.Windows_1.0.0.1_x86.appxsym

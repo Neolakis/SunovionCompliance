@@ -1,0 +1,612 @@
+[
+  {
+    "Category1":"Aggregate Spend and Sunshine Act",
+    "Category2":"",
+    "DocumentName":"Dear Doctor",
+    "Revision":"",
+    "RevisionDate":"5/6/2013",
+    "ShortDescription":"",
+    "Type":"SOP",
+    "Keyword1":""
+  },
+  {
+    "Category1":"Aggregate Spend and Sunshine Act",
+    "Category2":"",
+    "DocumentName":"Dear Field Sales",
+    "Revision":"",
+    "RevisionDate":"5/6/2013",
+    "ShortDescription":"",
+    "Type":"SOP",
+    "Keyword1":""
+  },
+  {
+    "Category1":"Aggregate Spend and Sunshine Act",
+    "Category2":"",
+    "DocumentName":"Dear R&D Colleagues",
+    "Revision":"",
+    "RevisionDate":"5/6/2013",
+    "ShortDescription":"",
+    "Type":"SOP",
+    "Keyword1":""
+  },
+  {
+    "Category1":"Aggregate Spend and Sunshine Act",
+    "Category2":"",
+    "DocumentName":"Guidelines for Recording Meals with HCPs in Veeva",
+    "Revision":"",
+    "RevisionDate":"3/25/2014",
+    "ShortDescription":"",
+    "Type":"SOP",
+    "Keyword1":"aggregat%"
+  },
+  {
+    "Category1":"Aggregate Spend and Sunshine Act ",
+    "Category2":"Compliance & Audit",
+    "DocumentName":"Aggregate Spend Policy",
+    "Revision":"1.17",
+    "RevisionDate":"11/13/2013",
+    "ShortDescription":"Government reporting of spend associated with physician customers",
+    "Type":"Policy",
+    "Keyword1":"aggregat%"
+  },
+  {
+    "Category1":"Commercial/Marketing",
+    "Category2":"",
+    "DocumentName":"Advisory Boards Policy",
+    "Revision":"3.08",
+    "RevisionDate":"4/18/2013",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"advisory "
+  },
+  {
+    "Category1":"Commercial/Marketing",
+    "Category2":"",
+    "DocumentName":"Best Price Selection Policy",
+    "Revision":"3.1",
+    "RevisionDate":"12/14/2012",
+    "ShortDescription":"Reporting Product Prices to the Government",
+    "Type":"Policy",
+    "Keyword1":"medicaid "
+  },
+  {
+    "Category1":"Commercial/Marketing",
+    "Category2":"",
+    "DocumentName":"Competitive Intelligence Policy",
+    "Revision":"1.12",
+    "RevisionDate":"1/5/2012",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"competit%"
+  },
+  {
+    "Category1":"Commercial/Marketing",
+    "Category2":"",
+    "DocumentName":"Direct to Consumer Advertising Policy",
+    "Revision":"3.08",
+    "RevisionDate":"12/16/2011",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"dtc"
+  },
+  {
+    "Category1":"Commercial/Marketing",
+    "Category2":"",
+    "DocumentName":"Public Health Policy",
+    "Revision":"3.02",
+    "RevisionDate":"12/14/2012",
+    "ShortDescription":"340B Discounted Prices",
+    "Type":"Policy",
+    "Keyword1":"public "
+  },
+  {
+    "Category1":"Commercial/Marketing",
+    "Category2":"",
+    "DocumentName":"Reprint SOP",
+    "Revision":"LGL-0001-0",
+    "RevisionDate":"7/14/2009",
+    "ShortDescription":"",
+    "Type":"SOP",
+    "Keyword1":"reprint%"
+  },
+  {
+    "Category1":"Commercial/Marketing",
+    "Category2":"Compliance & Audit",
+    "DocumentName":"Speakers Bureau Work Instructions",
+    "Revision":"",
+    "RevisionDate":"6/2/2014",
+    "ShortDescription":"",
+    "Type":"SOP",
+    "Keyword1":"program%"
+  },
+  {
+    "Category1":"Commercial/Marketing",
+    "Category2":"",
+    "DocumentName":"Support of Third Party Organizations",
+    "Revision":"1.13",
+    "RevisionDate":"6/22/2011",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"third part%"
+  },
+  {
+    "Category1":"Compliance & Audit",
+    "Category2":"",
+    "DocumentName":"Conference Attendance Approval Process Memo",
+    "Revision":"",
+    "RevisionDate":"5/3/2010",
+    "ShortDescription":"Employee Presentations at Conferences",
+    "Type":"Policy",
+    "Keyword1":"conference%"
+  },
+  {
+    "Category1":"Compliance & Audit",
+    "Category2":"",
+    "DocumentName":"Conflict of Interests Policy",
+    "Revision":"1.06",
+    "RevisionDate":"10/30/2012",
+    "ShortDescription":"Outside Work Volunteering Relationships",
+    "Type":"Policy",
+    "Keyword1":"conflict"
+  },
+  {
+    "Category1":"Compliance & Audit",
+    "Category2":"",
+    "DocumentName":"Corporate Policy Review Committee",
+    "Revision":"1",
+    "RevisionDate":"7/8/2011",
+    "ShortDescription":"CPRC",
+    "Type":"Policy",
+    "Keyword1":"CPRC"
+  },
+  {
+    "Category1":"Compliance & Audit",
+    "Category2":"",
+    "DocumentName":"Guidelines for Interactions with Healthcare Professionals",
+    "Revision":"",
+    "RevisionDate":"3/24/2014",
+    "ShortDescription":"How TSes Can Work with HCP Customers",
+    "Type":"Policy",
+    "Keyword1":"healthcare"
+  },
+  {
+    "Category1":"Compliance & Audit",
+    "Category2":"",
+    "DocumentName":"HealthCare Professional Consultants Policy",
+    "Revision":"3.04",
+    "RevisionDate":"8/23/2012",
+    "ShortDescription":"Speakers and Ad Boards",
+    "Type":"Policy",
+    "Keyword1":"consult%"
+  },
+  {
+    "Category1":"Compliance & Audit",
+    "Category2":"",
+    "DocumentName":"Open Door and Fair Investigation Policy",
+    "Revision":"1.07",
+    "RevisionDate":"6/16/2009",
+    "ShortDescription":"Compliance Investigations",
+    "Type":"Policy",
+    "Keyword1":"open door"
+  },
+  {
+    "Category1":"Compliance & Audit",
+    "Category2":"",
+    "DocumentName":"Sample Accountability Policy",
+    "Revision":"1.09",
+    "RevisionDate":"9/21/2012",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"sample%"
+  },
+  {
+    "Category1":"Corporate / G&A",
+    "Category2":"",
+    "DocumentName":"Corporate Giving Policy",
+    "Revision":"1.8",
+    "RevisionDate":"6/22/2011",
+    "ShortDescription":"Charitable Contributions",
+    "Type":"Policy",
+    "Keyword1":"giving"
+  },
+  {
+    "Category1":"Corporate / G&A",
+    "Category2":"",
+    "DocumentName":"Educational Grants Policy",
+    "Revision":"1.02",
+    "RevisionDate":"8/3/2011",
+    "ShortDescription":"Support for Scientific/Educational Programs",
+    "Type":"Policy",
+    "Keyword1":"grant%"
+  },
+  {
+    "Category1":"Corporate / G&A",
+    "Category2":"",
+    "DocumentName":"External Communications Policy",
+    "Revision":"1.3",
+    "RevisionDate":"5/15/2012",
+    "ShortDescription":"Media/Press Social Networks Promotional",
+    "Type":"Policy",
+    "Keyword1":"communication%"
+  },
+  {
+    "Category1":"Corporate / G&A",
+    "Category2":"",
+    "DocumentName":"Fleet Services Policy",
+    "Revision":"1.1",
+    "RevisionDate":"12/21/2012",
+    "ShortDescription":"Use of Company Cars",
+    "Type":"Policy",
+    "Keyword1":"fleet"
+  },
+  {
+    "Category1":"Corporate / G&A",
+    "Category2":"",
+    "DocumentName":"Invoice Payment Approval SOP",
+    "Revision":"FIN-001",
+    "RevisionDate":"7/1/2010",
+    "ShortDescription":"",
+    "Type":"SOP",
+    "Keyword1":"invoice%"
+  },
+  {
+    "Category1":"Corporate / G&A",
+    "Category2":"",
+    "DocumentName":"Preferred Supplier Relationship Management SOP",
+    "Revision":"PRO-003",
+    "RevisionDate":"7/1/2010",
+    "ShortDescription":"",
+    "Type":"SOP",
+    "Keyword1":"supplier%"
+  },
+  {
+    "Category1":"Corporate / G&A",
+    "Category2":"",
+    "DocumentName":"Procurement Policy",
+    "Revision":"3.06",
+    "RevisionDate":"12/21/2012",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"procurement"
+  },
+  {
+    "Category1":"Corporate / G&A",
+    "Category2":"",
+    "DocumentName":"Procurement SOP",
+    "Revision":"PRO-001",
+    "RevisionDate":"7/1/2010",
+    "ShortDescription":"",
+    "Type":"SOP",
+    "Keyword1":"procurement"
+  },
+  {
+    "Category1":"Corporate / G&A",
+    "Category2":"",
+    "DocumentName":"Publications Policy",
+    "Revision":"",
+    "RevisionDate":"6/30/2014",
+    "ShortDescription":"Publication of scientific and medical information",
+    "Type":"Policy",
+    "Keyword1":"journals"
+  },
+  {
+    "Category1":"Corporate / G&A",
+    "Category2":"",
+    "DocumentName":"Purchase Requisition and Invoice Approval SOP",
+    "Revision":"FIN-002.2",
+    "RevisionDate":"1/1/2013",
+    "ShortDescription":"",
+    "Type":"SOP",
+    "Keyword1":"approv%"
+  },
+  {
+    "Category1":"Corporate / G&A",
+    "Category2":"",
+    "DocumentName":"Receiving Goods and Completion of Services SOP",
+    "Revision":"PRO-008",
+    "RevisionDate":"5/1/2012",
+    "ShortDescription":"",
+    "Type":"SOP",
+    "Keyword1":"receiv%"
+  },
+  {
+    "Category1":"Corporate / G&A",
+    "Category2":"",
+    "DocumentName":"Social Media Policy",
+    "Revision":"",
+    "RevisionDate":"6/30/2014",
+    "ShortDescription":"How Sunovion can communicate on social media",
+    "Type":"Policy",
+    "Keyword1":"social media"
+  },
+  {
+    "Category1":"Corporate / G&A",
+    "Category2":"",
+    "DocumentName":"Strategic Sourcing SOP",
+    "Revision":"PRO-002",
+    "RevisionDate":"7/1/2010",
+    "ShortDescription":"",
+    "Type":"SOP",
+    "Keyword1":"supplier%"
+  },
+  {
+    "Category1":"Corporate / G&A",
+    "Category2":"",
+    "DocumentName":"Supplier List Management SOP",
+    "Revision":"PRO-004",
+    "RevisionDate":"7/1/2010",
+    "ShortDescription":"",
+    "Type":"SOP",
+    "Keyword1":"supplier%"
+  },
+  {
+    "Category1":"Human Resources",
+    "Category2":"",
+    "DocumentName":"Employee Gifts and Reward Program",
+    "Revision":"HR-001",
+    "RevisionDate":"4/16/2012",
+    "ShortDescription":"Employee Gifts and Reward Program SOP",
+    "Type":"SOP",
+    "Keyword1":"gift%"
+  },
+  {
+    "Category1":"Human Resources",
+    "Category2":"",
+    "DocumentName":"Leave of Absence Policy",
+    "Revision":"2.06",
+    "RevisionDate":"12/21/2012",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"Absence%"
+  },
+  {
+    "Category1":"Human Resources",
+    "Category2":"",
+    "DocumentName":"Military Leave Policy",
+    "Revision":"2.08",
+    "RevisionDate":"5/15/2012",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"military"
+  },
+  {
+    "Category1":"Human Resources",
+    "Category2":"",
+    "DocumentName":"Non-Discrimination /Harassment Policy",
+    "Revision":"2.01",
+    "RevisionDate":"9/27/2012",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"discriminat%"
+  },
+  {
+    "Category1":"Human Resources",
+    "Category2":"",
+    "DocumentName":"Vacation Policy",
+    "Revision":"2.05",
+    "RevisionDate":"12/21/2012",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"vacation"
+  },
+  {
+    "Category1":"IT",
+    "Category2":"",
+    "DocumentName":"Information Security Policy",
+    "Revision":"7.02",
+    "RevisionDate":"1/5/2012",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"IT "
+  },
+  {
+    "Category1":"IT",
+    "Category2":"",
+    "DocumentName":"MA Data Security FAQs",
+    "Revision":"",
+    "RevisionDate":"11/3/2009",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"Massachusetts"
+  },
+  {
+    "Category1":"IT",
+    "Category2":"",
+    "DocumentName":"MA Data Security Regulations",
+    "Revision":"",
+    "RevisionDate":"3/1/2010",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"Massachusetts"
+  },
+  {
+    "Category1":"Legal",
+    "Category2":"",
+    "DocumentName":"Anti Corruption Policy",
+    "Revision":"1.4",
+    "RevisionDate":"11/29/2012",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"anti%"
+  },
+  {
+    "Category1":"Legal",
+    "Category2":"",
+    "DocumentName":"Antitrust Compliance Policy",
+    "Revision":"1.16",
+    "RevisionDate":"5/15/2012",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"antitrust"
+  },
+  {
+    "Category1":"Legal",
+    "Category2":"",
+    "DocumentName":"Business Needs/Fair Market Value Assessment Form",
+    "Revision":"",
+    "RevisionDate":"5/17/2011",
+    "ShortDescription":"For Contracts with HCPs",
+    "Type":"Policy",
+    "Keyword1":"FMV"
+  },
+  {
+    "Category1":"Legal",
+    "Category2":"",
+    "DocumentName":"Contract Review and Signing Authority Policy",
+    "Revision":"3.03",
+    "RevisionDate":"12/14/2012",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"contract "
+  },
+  {
+    "Category1":"Legal",
+    "Category2":"",
+    "DocumentName":"Records Management and Retention Policy",
+    "Revision":"1.15",
+    "RevisionDate":"4/16/2012",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"records "
+  },
+  {
+    "Category1":"Legal",
+    "Category2":"",
+    "DocumentName":"Records Retention Schedule to the RIM Policy",
+    "Revision":"",
+    "RevisionDate":"10/10/2011",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"records "
+  },
+  {
+    "Category1":"Medical ",
+    "Category2":"",
+    "DocumentName":"Clinical Studies Policy",
+    "Revision":"9",
+    "RevisionDate":"6/22/2011",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"clinic%"
+  },
+  {
+    "Category1":"Medical ",
+    "Category2":"",
+    "DocumentName":"Investigator Initiatied Studies Policy",
+    "Revision":"1.14",
+    "RevisionDate":"12/16/2011",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"investigator"
+  },
+  {
+    "Category1":"Medical ",
+    "Category2":"",
+    "DocumentName":"Operation Policy for Clinical Development and Medical Affiarts Interactions with Healthcare Professionals",
+    "Revision":"9.02",
+    "RevisionDate":"5/25/2013",
+    "ShortDescription":"Medical Presentations: AMS HEOR",
+    "Type":"Policy",
+    "Keyword1":"medical"
+  },
+  {
+    "Category1":"Medical ",
+    "Category2":"",
+    "DocumentName":"Reporting of Adverse Drug Experiences PCs and Other Safety Information by Sunovion Employees and Agents",
+    "Revision":"9.01",
+    "RevisionDate":"1/5/2012",
+    "ShortDescription":"Adverse Events and Product Complaints",
+    "Type":"Policy",
+    "Keyword1":"AE"
+  },
+  {
+    "Category1":"Tone from the Middle",
+    "Category2":"",
+    "DocumentName":"TFM-1. RBM Support Tools",
+    "Revision":"",
+    "RevisionDate":"1/4/2013",
+    "ShortDescription":"Tone from the Middle Training Program",
+    "Type":"SOP",
+    "Keyword1":""
+  },
+  {
+    "Category1":"Tone from the Middle",
+    "Category2":"",
+    "DocumentName":"TFM-2. General Coaching Tools",
+    "Revision":"",
+    "RevisionDate":"1/4/2013",
+    "ShortDescription":"Tone from the Middle Training Program",
+    "Type":"SOP",
+    "Keyword1":""
+  },
+  {
+    "Category1":"Tone from the Middle",
+    "Category2":"",
+    "DocumentName":"TFM-4. TS Support Tools",
+    "Revision":"",
+    "RevisionDate":"1/4/2013",
+    "ShortDescription":"Tone from the Middle Training Program",
+    "Type":"SOP",
+    "Keyword1":""
+  },
+  {
+    "Category1":"Travel & Expense",
+    "Category2":"",
+    "DocumentName":"Business Courtesies Policy",
+    "Revision":"3.05",
+    "RevisionDate":"8/23/2012",
+    "ShortDescription":"Meals Medically Relevant Items Giveaways",
+    "Type":"Policy",
+    "Keyword1":"meal%"
+  },
+  {
+    "Category1":"Travel & Expense",
+    "Category2":"",
+    "DocumentName":"Business Travel Policy",
+    "Revision":"1.11",
+    "RevisionDate":"10/5/2011",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"credit card"
+  },
+  {
+    "Category1":"Travel & Expense",
+    "Category2":"",
+    "DocumentName":"Business Travel Policy Work Instructions",
+    "Revision":"",
+    "RevisionDate":"11/1/2002",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"Preferred"
+  },
+  {
+    "Category1":"Travel & Expense",
+    "Category2":"",
+    "DocumentName":"Corporate Shipping SOP",
+    "Revision":"PRO-007",
+    "RevisionDate":"9/24/2012",
+    "ShortDescription":"",
+    "Type":"SOP",
+    "Keyword1":"ship%"
+  },
+  {
+    "Category1":"Travel & Expense",
+    "Category2":"",
+    "DocumentName":"Corporate Travel and Expense Credit Card SOP",
+    "Revision":"FIN-003",
+    "RevisionDate":"9/22/2010",
+    "ShortDescription":"",
+    "Type":"SOP",
+    "Keyword1":"credit card"
+  },
+  {
+    "Category1":"Travel & Expense",
+    "Category2":"",
+    "DocumentName":"Expenditure Commitment & Invoice/Payment Approval Policy",
+    "Revision":"3.07",
+    "RevisionDate":"12/14/2012",
+    "ShortDescription":"",
+    "Type":"Policy",
+    "Keyword1":"expenditure"
+  }
+]
