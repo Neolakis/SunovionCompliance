@@ -1,4 +1,5 @@
-﻿using SQLite;
+﻿using DT.GoogleAnalytics.Metro;
+using SQLite;
 using SunovionCompliance.Model;
 using System;
 using System.Collections.Generic;
@@ -135,8 +136,8 @@ namespace SunovionCompliance
                 }
 
                 CategoryList.ItemsSource = categories;
-                DocumentList.ItemsSource = documents;
-                UpdateList.ItemsSource = documents;
+                //DocumentList.ItemsSource = documents;
+                //UpdateList.ItemsSource = documents;
             }
             catch (Exception e2)
             {

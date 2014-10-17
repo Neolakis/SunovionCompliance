@@ -133,11 +133,24 @@
     <Content Include="Assets\category_unselected.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\DT.GoogleAnalytics.Metro.dll" />
     <Content Include="Assets\Fonts\HelveticaNeueBold.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Fonts\HelveticaNeueMedium.ttf" />
     <Content Include="Assets\ComplianceDb.db">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\HeaderArea\star-dark4_2x.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\HeaderArea\star-hover4_2x.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\HeaderArea\star-lit4_2x.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\HeaderArea\star4_2x.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\Icon\icon 140.png" />
@@ -329,6 +342,9 @@
     <Content Include="Assets\CompliancePdfs\Vacation Policy.PDF">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="blank.html" />
+    <Content Include="ga.js" />
+    <None Include="packages.config" />
     <None Include="SunovionCompliance.Windows_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
@@ -359,7 +375,12 @@
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Reference Include="DT.GoogleAnalytics.Metro, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Assets\DT.GoogleAnalytics.Metro.dll</HintPath>
+    </Reference>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '12.0' ">
     <VisualStudioVersion>12.0</VisualStudioVersion>
   </PropertyGroup>

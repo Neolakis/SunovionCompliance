@@ -5,9 +5,12 @@
     xmlns:local="using:SunovionCompliance"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:a="using:DT.GoogleAnalytics.Metro"
     mc:Ignorable="d" 
     MinWidth="1920" MinHeight="1080">
     <Page.Resources>
+        <!-- TODO: DONT FORGET TO UPDATE WebPropertyID -->
+        <a:GoogleAnalyticsSettings x:Key="GoogleAnalytics" WebPropertyId="UA-6404849-1" />
         <Style x:Key="ListViewItemStyle1" TargetType="ListViewItem">
             <Setter Property="FontFamily" Value="{StaticResource ContentControlThemeFontFamily}"/>
             <Setter Property="FontSize" Value="{StaticResource ControlContentThemeFontSize}"/>
@@ -297,7 +300,7 @@
         <Style x:Key="CategoryListViewItemStyle" TargetType="ListViewItem">
             <Setter Property="FontFamily" Value="{ThemeResource ContentControlThemeFontFamily}"/>
             <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}"/>
-            <Setter Property="Background" >                
+            <Setter Property="Background" >
                 <Setter.Value>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
                         <GradientStop Color="White" Offset="0" />
@@ -411,18 +414,28 @@
                 <TextBlock Text="DOCUMENT LIBRARY" FontSize="26" Width="510" Height="100" Margin="0,35,0,0" TextAlignment="Center" 
                            FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue" />
                 <Line X1="0" Y1="20" Y2="80" Stroke="White" StrokeThickness="2" />
-                <SearchBox PlaceholderText="Search..."  FontSize="30" Height="60"  Width="800" Margin="25,20,25,20" FocusOnKeyboardInput="False" QuerySubmitted="SearchBox_QuerySubmitted" />
+                <SearchBox PlaceholderText="Search..."  FontSize="30" Height="60"  Width="700" Margin="25,20,25,20" FocusOnKeyboardInput="False" QuerySubmitted="SearchBox_QuerySubmitted" />
                 <Line X1="0" Y1="20" Y2="80" Stroke="White" StrokeThickness="2" />
-                <Button Content="Announcements" FontSize="26" Margin="30,0,0,0" Background="#80C461" BorderBrush="Green" Style="{StaticResource NavBarButtons}"
-                        FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue">
+
+                <Button Content="Favorites" FontSize="26" Margin="30,0,0,0" Background="#80C461" BorderBrush="Green" Style="{StaticResource NavBarButtons}"  
+                        FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue" >
                     <Button.Flyout>
                         <Flyout Placement="Bottom">
                             <StackPanel Height="Auto">
                                 <TextBlock FontSize="26" Foreground="Black" Margin="0,0,0,0" TextWrapping="WrapWholeWords"
                                                        FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue">
-                                    There are no announcements.
+                                    There are no favorites.
                                 </TextBlock>
                             </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+                <Button Content="Announcements" FontSize="26" Margin="30,25,0,0" Background="#80C461" BorderBrush="Green" Style="{StaticResource NavBarButtons}"
+                        FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue" VerticalAlignment="Top">
+                    <Button.Flyout>
+                        <Flyout Placement="Bottom">
+                            <TextBlock FontSize="26" Foreground="Black" Margin="0,0,0,0" TextWrapping="WrapWholeWords"
+                                       FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue" Text="There are no new announcements." Width="220" />
                         </Flyout>
                     </Button.Flyout>
                 </Button>
@@ -488,6 +501,10 @@
                                 <TextBlock Text="VIEW" FontSize="22" Margin="1" Foreground="Black"
                                            FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"/>
                             </Button>
+                            <ToggleButton Canvas.Left="950" Canvas.Top="30" Background="#cbcbcb" Width="180" Margin="0" BorderThickness="0" IsHitTestVisible="True">
+                                <TextBlock Text="FAVORITE" FontSize="22" Margin="1" Foreground="Black"
+                                           FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"/>
+                            </ToggleButton>
                         </Canvas>
                     </DataTemplate>
                 </ListView.ItemTemplate>
