@@ -6,8 +6,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:a="using:DT.GoogleAnalytics.Metro"
+    xmlns:toolkit="using:WinRTXamlToolkit.Controls"
     mc:Ignorable="d" 
-    MinWidth="1920" MinHeight="1080">
+    MinWidth="1366" MinHeight="768">
     <Page.Resources>
         <!-- TODO: DONT FORGET TO UPDATE WebPropertyID -->
         <a:GoogleAnalyticsSettings x:Key="GoogleAnalytics" WebPropertyId="UA-6404849-1" />
@@ -405,33 +406,28 @@
                 </Grid.Background>
                 <Image Grid.Column="0" Source="Assets/HeaderArea/compliance logo.png" Margin="22,14,0,0" Stretch="None"></Image>
                 <StackPanel Grid.Column="1" Orientation="Vertical" Margin="45,56,0,-6">
-                    <TextBlock Text="Application Name" FontSize="26" FontFamily="Arial"  FontWeight="Bold" Foreground="Black" Margin="0,0,0,10"></TextBlock>
-                    <TextBlock Text="Revision 1.0" FontSize="26" FontFamily="Arial"  FontWeight="Bold" Foreground="Black"></TextBlock>
+                    <TextBlock Text="Sunovion Compliance" FontSize="26" FontFamily="Arial"  FontWeight="Bold" Foreground="Black" Margin="0,0,0,10"></TextBlock>
+                    <TextBlock Text="Revision 2.0" FontSize="26" FontFamily="Arial"  FontWeight="Bold" Foreground="Black"></TextBlock>
                 </StackPanel>
                 <Image Grid.Column="3" Source="Assets/HeaderArea/sunovion logo.png" Canvas.Top="22" Canvas.Left="14" Stretch="None" Margin="0,0,65,0"/>
             </Grid>
-            <StackPanel Height="100" Background="#09805A" Orientation="Horizontal" VerticalAlignment="Center">
-                <TextBlock Text="DOCUMENT LIBRARY" FontSize="26" Width="510" Height="100" Margin="0,35,0,0" TextAlignment="Center" 
+            <Grid Height="100" Background="#09805A">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="510"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="DOCUMENT LIBRARY" FontSize="26" Width="510" Height="100" Margin="0,35,0,0" TextAlignment="Center" Grid.Column="0"
                            FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue" />
-                <Line X1="0" Y1="20" Y2="80" Stroke="White" StrokeThickness="2" />
-                <SearchBox PlaceholderText="Search..."  FontSize="30" Height="60"  Width="700" Margin="25,20,25,20" FocusOnKeyboardInput="False" QuerySubmitted="SearchBox_QuerySubmitted" />
-                <Line X1="0" Y1="20" Y2="80" Stroke="White" StrokeThickness="2" />
-
-                <Button Content="Favorites" FontSize="26" Margin="30,0,0,0" Background="#80C461" BorderBrush="Green" Style="{StaticResource NavBarButtons}"  
-                        FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue" >
-                    <Button.Flyout>
-                        <Flyout Placement="Bottom">
-                            <StackPanel Height="Auto">
-                                <TextBlock FontSize="26" Foreground="Black" Margin="0,0,0,0" TextWrapping="WrapWholeWords"
-                                                       FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue">
-                                    There are no favorites.
-                                </TextBlock>
-                            </StackPanel>
-                        </Flyout>
-                    </Button.Flyout>
-                </Button>
-                <Button Content="Announcements" FontSize="26" Margin="30,25,0,0" Background="#80C461" BorderBrush="Green" Style="{StaticResource NavBarButtons}"
-                        FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue" VerticalAlignment="Top">
+                <Line X1="0" Y1="20" Y2="80" Stroke="White" StrokeThickness="2" Grid.Column="1"/>
+                <SearchBox PlaceholderText="Search..."  FontSize="30" Height="60"  Width="Auto" Margin="25,20,25,20" Grid.Column="2"
+                           FocusOnKeyboardInput="False" QuerySubmitted="SearchBox_QuerySubmitted" />
+                <Line X1="0" Y1="20" Y2="80" Stroke="White" StrokeThickness="2" Grid.Column="3" />
+                <Button Content="Announcements" Style="{StaticResource NavBarButtons}" Grid.Column="4">
                     <Button.Flyout>
                         <Flyout Placement="Bottom">
                             <TextBlock FontSize="26" Foreground="Black" Margin="0,0,0,0" TextWrapping="WrapWholeWords"
@@ -439,8 +435,7 @@
                         </Flyout>
                     </Button.Flyout>
                 </Button>
-                <Button Content="Updates" FontSize="26" Margin="30,0,0,0" Background="#80C461" BorderBrush="Green" Style="{StaticResource NavBarButtons}"  
-                        FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue" >
+                <Button Content="Updates"  Style="{StaticResource NavBarButtons}" Grid.Column="5">
                     <Button.Flyout>
                         <Flyout Placement="Bottom">
                             <ListView x:Name="UpdateList" Margin="0" Padding="0,10,0,0" Width="510" HorizontalAlignment="Left" >
@@ -465,7 +460,19 @@
                         </Flyout>
                     </Button.Flyout>
                 </Button>
-            </StackPanel>
+                <Button Content="Favorites" Style="{StaticResource NavBarButtons}" Grid.Column="6">
+                    <Button.Flyout>
+                        <Flyout Placement="Bottom">
+                            <StackPanel Height="Auto">
+                                <TextBlock FontSize="26" Foreground="Black" Margin="0,0,0,0" TextWrapping="WrapWholeWords"
+                                                       FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue">
+                                    There are no favorites.
+                                </TextBlock>
+                            </StackPanel>
+                        </Flyout>
+                    </Button.Flyout>
+                </Button>
+            </Grid>
         </StackPanel>
         <!-- Body area -->
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0">
@@ -491,20 +498,20 @@
                     <DataTemplate>
                         <Canvas Height="125" Margin="0">
                             <Image Source="Assets/Adobe_Reader_PDF_Icon.png" Margin="1" Width="85" Height="85" Canvas.Left="20" Canvas.Top="10"/>
-                            <TextBlock Text="{Binding DocumentName}" FontSize="26" Margin="1"  Foreground="Black" Canvas.Left="120" Canvas.Top="10"
+                            <TextBlock Text="{Binding DocumentName}" FontSize="26" Margin="1"  Foreground="Black" Canvas.Left="160" Canvas.Top="10"
                                        FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"/>
                             <TextBlock Text="{Binding ShortDescription}" FontSize="24" Margin="1"  Foreground="Black" Canvas.Left="120" Canvas.Top="40"
                                        FontFamily="Assets/Fonts/HelveticaNeueMedium.ttf#Helvetica Neue"/>
                             <TextBlock Text="{Binding Revision}" FontSize="24" Margin="1"  Foreground="Black" Canvas.Left="120" Canvas.Top="70"
                                        FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"/>
-                            <Button Canvas.Left="1150" Canvas.Top="30" Background="#cbcbcb" Width="180" Margin="0" BorderThickness="0" IsHitTestVisible="False">
+                            <!--<Button Canvas.Left="1150" Canvas.Top="30" Background="#cbcbcb" Width="180" Margin="0" BorderThickness="0" IsHitTestVisible="False">
                                 <TextBlock Text="VIEW" FontSize="22" Margin="1" Foreground="Black"
                                            FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"/>
-                            </Button>
-                            <ToggleButton Canvas.Left="950" Canvas.Top="30" Background="#cbcbcb" Width="180" Margin="0" BorderThickness="0" IsHitTestVisible="True">
-                                <TextBlock Text="FAVORITE" FontSize="22" Margin="1" Foreground="Black"
-                                           FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"/>
-                            </ToggleButton>
+                            </Button>-->
+                            <toolkit:ImageToggleButton CheckedDisabledStateImageSource="Assets/HeaderArea/star4_2x.png"
+                                                       NormalStateImageSource="Assets/HeaderArea/star4_2x.png"
+                                                       CheckedStateImageSource="Assets/HeaderArea/star-lit4_2x.png"
+                                                       Canvas.Left="120" Canvas.Top="10" Background="#cbcbcb" />
                         </Canvas>
                     </DataTemplate>
                 </ListView.ItemTemplate>
