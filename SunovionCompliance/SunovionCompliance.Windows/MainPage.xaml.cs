@@ -35,6 +35,7 @@ namespace SunovionCompliance
     {
         public List<CategoryType> categories { get; set; }
         public List<PdfInfo> documents { get; set; }
+        public List<PdfInfo> favorites { get; set; }
         public int? LastSelectedIndex;
         public LinearGradientBrush CategoryBackgroundBrush;
         
@@ -80,7 +81,12 @@ namespace SunovionCompliance
             return "Unexpected result.";
         }
 
-        protected async override void OnNavigatedTo(NavigationEventArgs e)
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+
+        }
+
+        protected async void Page_Loaded(object sender, RoutedEventArgs e)
         {
             MessageDialog test;
             String returnValue = await UpDatabase();
@@ -104,7 +110,8 @@ namespace SunovionCompliance
                 List<PdfInfo> devicePdfDataQuery = await conn.Table<PdfInfo>().ToListAsync();
                 foreach (PdfInfo newPdfInfo in backendPdfData)
                 {
-                    if (devicePdfDataQuery.Where(item => item.DocumentName == newPdfInfo.DocumentName).Count() == 0 )
+                    newPdfInfo.Favorite = false;
+                    if (devicePdfDataQuery.Where(item => item.DocumentName == newPdfInfo.DocumentName).Count() == 0)
                     {
                         newPdfInfo.DocumentName = newPdfInfo.DocumentName.Trim();
                         var rowAdded = await conn.InsertAsync(newPdfInfo);
@@ -124,7 +131,8 @@ namespace SunovionCompliance
                 var query2 = conn.Table<CategoryType>();
                 var query3 = conn.Table<PdfInfo>();
                 categories = await query2.ToListAsync();
-                documents = await query3.ToListAsync();
+                documents = await query3.Where(info => info.Category1 == "Compliance & Audit").ToListAsync();
+                favorites = documents.Where(info => info.Favorite == true).ToList();
 
                 foreach (CategoryType item in categories)
                 {
@@ -132,12 +140,16 @@ namespace SunovionCompliance
                 }
                 foreach (PdfInfo item in documents)
                 {
-                    item.Revision = "Year: " + System.DateTime.Parse(item.RevisionDate).Year + " Revision " + item.Revision;
+                    item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).Year + " Revision " + item.Revision;
                 }
-
                 CategoryList.ItemsSource = categories;
-                //DocumentList.ItemsSource = documents;
+                DocumentList.ItemsSource = documents;
+                FavoritesList.ItemsSource = favorites;
                 //UpdateList.ItemsSource = documents;
+                //if (categories.Count > 0)
+                //{
+                //    CategoryList.SelectedIndex = 0;
+                //}
             }
             catch (Exception e2)
             {
@@ -190,7 +202,7 @@ namespace SunovionCompliance
             {
                 foreach (PdfInfo item in documents)
                 {
-                    item.Revision = "Year: " + System.DateTime.Parse(item.RevisionDate).Year + " Revision " + item.Revision;
+                    item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).Year + " Revision " + item.Revision;
                 }
                 DocumentList.ItemsSource = documents;
             }
@@ -235,5 +247,42 @@ namespace SunovionCompliance
             }
             DocumentList.ItemsSource = documents;
         }
+
+
+        private async void AddOrRemoveFavorite(PdfInfo item, bool addFavorite)
+        {
+            SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");
+
+            int primaryKey = item.Id;
+            item.Favorite = addFavorite;
+
+            await conn.UpdateAsync(item);
+
+            var query3 = conn.Table<PdfInfo>();
+            List<PdfInfo> tempList = await query3.ToListAsync();
+            FavoritesList.ItemsSource = tempList.Where(info => info.Favorite == true).ToList();
+        }
+
+        private void ImageToggleButton_Checked(object sender, RoutedEventArgs e)
+        {
+            PdfInfo item = (sender as FrameworkElement).DataContext as PdfInfo;
+
+            if (item != null)
+            {
+                AddOrRemoveFavorite(item, true);
+            }
+
+        }
+
+        private void ImageToggleButton_Unchecked(object sender, RoutedEventArgs e)
+        {
+            PdfInfo item = (sender as FrameworkElement).DataContext as PdfInfo;
+
+            if (item != null)
+            {
+                AddOrRemoveFavorite(item, false);
+            }
+        }
+
     }
 }

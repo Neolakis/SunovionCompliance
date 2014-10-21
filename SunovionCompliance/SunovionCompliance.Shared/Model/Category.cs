@@ -27,6 +27,10 @@ namespace SunovionCompliance.Model
         public string FileLocation { get; set; }
         public string Type { get; set; }
         public string Keyword1 { get; set; }
+        public bool Favorite { get; set; }
+
+        [Ignore]
+        public string RevisionPlusDate { get; set; }
     }    
 }
 
