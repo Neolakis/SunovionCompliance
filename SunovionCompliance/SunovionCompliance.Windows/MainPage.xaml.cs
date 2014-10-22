@@ -3,6 +3,7 @@ using SQLite;
 using SunovionCompliance.Model;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -14,6 +15,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.UI;
+using Windows.UI.Notifications;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -85,7 +87,7 @@ namespace SunovionCompliance
         {
 
         }
-
+        
         protected async void Page_Loaded(object sender, RoutedEventArgs e)
         {
             MessageDialog test;
@@ -108,30 +110,31 @@ namespace SunovionCompliance
             {
                 SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");                
                 List<PdfInfo> devicePdfDataQuery = await conn.Table<PdfInfo>().ToListAsync();
-                foreach (PdfInfo newPdfInfo in backendPdfData)
-                {
-                    newPdfInfo.Favorite = false;
-                    if (devicePdfDataQuery.Where(item => item.DocumentName == newPdfInfo.DocumentName).Count() == 0)
-                    {
-                        newPdfInfo.DocumentName = newPdfInfo.DocumentName.Trim();
-                        var rowAdded = await conn.InsertAsync(newPdfInfo);
-                    }
-                    else
-                    {
-                        PdfInfo tempItem = newPdfInfo;
-                        tempItem.Id = devicePdfDataQuery.Where(item => item.DocumentName == newPdfInfo.DocumentName).First<PdfInfo>().Id;
-                        tempItem.Keyword1 = newPdfInfo.Keyword1.Trim();
-                        await conn.UpdateAsync(tempItem);
-                    }
-                }
+                //foreach (PdfInfo newPdfInfo in backendPdfData)
+                //{
+                //    newPdfInfo.Favorite = false;
+                //    if (devicePdfDataQuery.Where(item => item.DocumentName == newPdfInfo.DocumentName).Count() == 0)
+                //    {
+                //        newPdfInfo.DocumentName = newPdfInfo.DocumentName.Trim();
+                //        var rowAdded = await conn.InsertAsync(newPdfInfo);
+                //    }
+                //    else
+                //    {
+                //        PdfInfo tempItem = newPdfInfo;
+                //        tempItem.Id = devicePdfDataQuery.Where(item => item.DocumentName == newPdfInfo.DocumentName).First<PdfInfo>().Id;
+                //        tempItem.Keyword1 = newPdfInfo.Keyword1.Trim();
+                //        await conn.UpdateAsync(tempItem);
+                //    }
+                //}
 
                 //test = new MessageDialog(newItem.Category1 );
                 //await test.ShowAsync();
 
                 var query2 = conn.Table<CategoryType>();
                 var query3 = conn.Table<PdfInfo>();
-                categories = await query2.ToListAsync();
-                documents = await query3.Where(info => info.Category1 == "Compliance & Audit").ToListAsync();
+                categories = await query2.OrderBy(category => category.Category).ToListAsync();
+                documents = await query3.Where(info => info.Category1 == "Compliance & Audit" 
+                    || info.Category2 == "Compliance & Audit").OrderBy(info => info.DocumentName).ToListAsync();
                 favorites = documents.Where(info => info.Favorite == true).ToList();
 
                 foreach (CategoryType item in categories)
@@ -139,6 +142,10 @@ namespace SunovionCompliance
                     item.Category = item.Category.ToUpper();
                 }
                 foreach (PdfInfo item in documents)
+                {
+                    item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).Year + " Revision " + item.Revision;
+                }
+                foreach (PdfInfo item in favorites)
                 {
                     item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).Year + " Revision " + item.Revision;
                 }
@@ -188,7 +195,7 @@ namespace SunovionCompliance
             // Launch the URI
             //var success = await Windows.System.Launcher.LaunchUriAsync(uri);
         }
-
+        
         async private void CategoryList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var SelectedIndex = CategoryList.SelectedIndex;
@@ -196,15 +203,19 @@ namespace SunovionCompliance
 
             SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");
             AsyncTableQuery<PdfInfo> relatedItemsQuery = conn.Table<PdfInfo>();
-            relatedItemsQuery = relatedItemsQuery.Where(fi => fi.Category1.ToUpper().Contains(categortySelected.Category));            
+            relatedItemsQuery = relatedItemsQuery.Where(fi => fi.Category1.ToUpper().Contains(categortySelected.Category)).OrderBy(fi => fi.DocumentName);            
             documents = await relatedItemsQuery.ToListAsync();
             if (documents.Count != 0)
             {
+                ObservableCollection<PdfInfo> tempCollection = new ObservableCollection<PdfInfo>();
+                DocumentList.ItemsSource = tempCollection;
+
                 foreach (PdfInfo item in documents)
                 {
+                    await Task.Delay(50);
                     item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).Year + " Revision " + item.Revision;
+                    tempCollection.Add(item);
                 }
-                DocumentList.ItemsSource = documents;
             }
             else
             {
@@ -260,7 +271,12 @@ namespace SunovionCompliance
 
             var query3 = conn.Table<PdfInfo>();
             List<PdfInfo> tempList = await query3.ToListAsync();
-            FavoritesList.ItemsSource = tempList.Where(info => info.Favorite == true).ToList();
+            tempList = tempList.Where(info => info.Favorite == true).ToList();
+            foreach (PdfInfo tempItem in tempList)
+            {
+                tempItem.RevisionPlusDate = "Year: " + System.DateTime.Parse(tempItem.RevisionDate).Year + " Revision " + tempItem.Revision;
+            }
+            FavoritesList.ItemsSource = tempList;
         }
 
         private void ImageToggleButton_Checked(object sender, RoutedEventArgs e)
@@ -282,6 +298,46 @@ namespace SunovionCompliance
             {
                 AddOrRemoveFavorite(item, false);
             }
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            // Create a string with the tile template xml.
+            // Note that the version is set to "3" and that fallbacks are provided for the Square150x150 and Wide310x150 tile sizes.
+            // This is so that the notification can be understood by Windows 8 and Windows 8.1 machines as well.
+            string message = "Last update was at " + DateTime.Now.ToString("h:mm tt") + Environment.NewLine + "0 Updates were downloaded."; 
+            string tileXmlString =
+                "<tile>"
+                + "<visual version='3'>"
+                + "<binding template='TileSquare150x150Text04' fallback='TileSquareText04'>"
+                + "<text id='1'>"+message+"</text>"
+                + "</binding>"
+                + "<binding template='TileWide310x150Text03' fallback='TileWideText03'>"
+                + "<text id='1'>" + message + "</text>"
+                + "</binding>"
+                + "<binding template='TileSquare310x310Text09'>"
+                + "<text id='1'>" + message + "</text>"
+                + "</binding>"
+                + "</visual>"
+                + "</tile>";
+
+            // Create a DOM.
+            Windows.Data.Xml.Dom.XmlDocument tileDOM = new Windows.Data.Xml.Dom.XmlDocument();
+
+            // Load the xml string into the DOM.
+            tileDOM.LoadXml(tileXmlString);
+
+            // Create a tile notification.
+            TileNotification tile = new TileNotification(tileDOM);
+
+            // Send the notification to the application? tile.
+            //TileUpdateManager.CreateTileUpdaterForApplication().Update(tile);
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            // TileUpdater is also used to clear the tile.
+            TileUpdateManager.CreateTileUpdaterForApplication().Clear();
         }
 
     }
