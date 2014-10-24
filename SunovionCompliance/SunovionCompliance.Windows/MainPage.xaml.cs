@@ -11,12 +11,14 @@ using System.Runtime.Serialization.Json;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
+using Windows.Data.Html;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.UI;
 using Windows.UI.Notifications;
 using Windows.UI.Popups;
+using Windows.UI.Text;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -36,7 +38,9 @@ namespace SunovionCompliance
     public sealed partial class MainPage : Page
     {
         public List<CategoryType> categories { get; set; }
+        public List<Announcement> announcements { get; set; }
         public List<PdfInfo> documents { get; set; }
+        public List<PdfInfo> updates { get; set; }
         public List<PdfInfo> favorites { get; set; }
         public int? LastSelectedIndex;
         public LinearGradientBrush CategoryBackgroundBrush;
@@ -133,9 +137,13 @@ namespace SunovionCompliance
                 var query2 = conn.Table<CategoryType>();
                 var query3 = conn.Table<PdfInfo>();
                 categories = await query2.OrderBy(category => category.Category).ToListAsync();
-                documents = await query3.Where(info => info.Category1 == "Compliance & Audit" 
-                    || info.Category2 == "Compliance & Audit").OrderBy(info => info.DocumentName).ToListAsync();
-                favorites = documents.Where(info => info.Favorite == true).ToList();
+                documents = await query3.OrderBy(info => info.DocumentName).ToListAsync();
+                announcements = new List<Announcement>();
+                announcements.Add(new Announcement() {
+                    Title = "Nam ac risus ut turpis laoreet dignissim vitae vel urna.",
+                    Body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+                    Date = "June 9, 2013"
+                });
 
                 foreach (CategoryType item in categories)
                 {
@@ -145,23 +153,33 @@ namespace SunovionCompliance
                 {
                     item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).Year + " Revision " + item.Revision;
                 }
-                foreach (PdfInfo item in favorites)
-                {
-                    item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).Year + " Revision " + item.Revision;
-                }
+                // Set updates, favorites after modification to master document list have been made.
+                updates = documents.Where(info => info.Updated == true).ToList();
+                favorites = documents.Where(info => info.Favorite == true).ToList();
+
                 CategoryList.ItemsSource = categories;
+                AnnouncementList.ItemsSource = announcements;
                 DocumentList.ItemsSource = documents;
                 FavoritesList.ItemsSource = favorites;
-                //UpdateList.ItemsSource = documents;
-                //if (categories.Count > 0)
-                //{
-                //    CategoryList.SelectedIndex = 0;
-                //}
+                UpdatedList.ItemsSource = updates;
             }
             catch (Exception e2)
             {
                 test = new MessageDialog(e2.Message);
             }
+
+            //string AnnouncementTest = HtmlUtilities.ConvertToText("<p>Dear Field Sales Professionals,<br/>We'd like to welcome you ... "
+            //    + "and what you believe needs to be changed or improved in future version.<br/><br/>Best Regards<br/><b>The Compliance and Ethics Team</b><br/><br/><b>July 1, 2013</b></p>");
+            //string AnnouncementTest2 = "Dear Field Sales Professionals,We'd like to welcome you ... and what you believe needs to be changed or improved in future version."
+            //    + "Best RegardsThe Compliance and Ethics Team/r/n<Bold>July 1, 2013</Bold>";
+            //((TextBlock)TempAnnouncement).Text = "Asdfadfs";
+            //TextBlock tb = new TextBlock();
+            //tb.TextWrapping = TextWrapping.Wrap;
+            //tb.Margin = new Thickness(10);
+            //tb.FontWeight = FontWeights.Bold;
+            //tb.Text = AnnouncementTest2;
+            //TempAnnouncement = tb;
+
             //await test.ShowAsync();
         }
 

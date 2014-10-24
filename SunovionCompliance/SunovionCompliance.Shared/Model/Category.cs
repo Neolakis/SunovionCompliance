@@ -28,10 +28,18 @@ namespace SunovionCompliance.Model
         public string Type { get; set; }
         public string Keyword1 { get; set; }
         public bool Favorite { get; set; }
+        public bool Updated { get; set; }
 
         [Ignore]
         public string RevisionPlusDate { get; set; }
-    }    
+    }
+    
+    public class Announcement
+    {
+        public string Title { get; set; }
+        public string Body { get; set; }
+        public string Date { get; set; }
+    }
 }
 
 

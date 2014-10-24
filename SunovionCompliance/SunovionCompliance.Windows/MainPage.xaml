@@ -407,7 +407,7 @@
                 </Grid.Background>
                 <Image Grid.Column="0" Source="Assets/HeaderArea/compliance logo.png" Margin="22,14,0,0" Stretch="None"></Image>
                 <StackPanel Grid.Column="1" Orientation="Vertical" Margin="45,56,0,-6">
-                    <TextBlock Text="Compliance &amp; Ethics" FontSize="26" FontFamily="Arial"  FontWeight="Bold" Foreground="Black" Margin="0,0,0,10"></TextBlock>
+                    <TextBlock Text="The Beacon" FontSize="26" FontFamily="Arial"  FontWeight="Bold" Foreground="Black" Margin="0,0,0,10"></TextBlock>
                     <TextBlock Text="Version 2.0" FontSize="26" FontFamily="Arial"  FontWeight="Bold" Foreground="Black"></TextBlock>
                 </StackPanel>
                 <Image Grid.Column="2" Source="Assets/HeaderArea/sunovion logo.png" Canvas.Top="22" Canvas.Left="14" Stretch="None" Margin="0,0,65,0"/>
@@ -430,20 +430,51 @@
                 <Line X1="0" Y1="20" Y2="80" Stroke="White" StrokeThickness="2" Grid.Column="3" />
                 <Button Content="Announcements" Style="{StaticResource NavBarButtons}" Grid.Column="4" Click="Button_Click">
                     <Button.Flyout>
-                        <Flyout Placement="Bottom">
-                            <Viewbox Width="220">
-                                    <TextBlock FontSize="18" Foreground="Black" Margin="0,0,0,0" TextWrapping="WrapWholeWords"
-                                        FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue" Text="There are no new announcements." Width="220" />
-                            </Viewbox>
-                        </Flyout>
+                            <Flyout Placement="Bottom">
+                                <ListView x:Name="AnnouncementList" Margin="0" Padding="0,0,0,0" Width="345" HorizontalAlignment="Stretch" >
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Width="320">
+                                                <StackPanel Width="320" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                                    <TextBlock Width="300" Text="{Binding Title}" FontSize="20" Foreground="Black" Margin="0" TextWrapping="WrapWholeWords"
+                                                       FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"/>
+                                                    <TextBlock Width="300" Text="{Binding Date}" FontSize="18" Foreground="Black" Margin="0"
+                                                       FontFamily="Assets/Fonts/HelveticaNeueMedium.ttf#Helvetica Neue" FontStyle="Italic"/>
+                                                    <TextBlock Width="300" Text="{Binding Body}" FontSize="18" Foreground="Black" Margin="0" TextWrapping="WrapWholeWords"
+                                                       FontFamily="Assets/Fonts/HelveticaNeueMedium.ttf#Helvetica Neue"/>
+                                                    <Line Y1="10" Y2="10" X1="0" X2="400" Stroke="LightGray" StrokeThickness="2" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Flyout>
                     </Button.Flyout>
                 </Button>
                 <Button Content="Updates"  Style="{StaticResource NavBarButtons}" Grid.Column="5" Click="Button_Click_1">
                     <Button.Flyout>
-                        <Flyout Placement="Bottom">
-                            <TextBlock FontSize="18" Foreground="Black" Margin="0,0,0,0" TextWrapping="WrapWholeWords"
-                                       FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue" Text="There are no new updates." Width="220" />
-                        </Flyout>
+                            <Flyout Placement="Bottom">
+                                <ListView x:Name="UpdatedList" Margin="0" Padding="0,0,0,0" Width="345" HorizontalAlignment="Stretch" 
+                                      ItemClick="DocumentList_ItemClick" IsItemClickEnabled="True" >
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Width="365">
+                                                <Image Source="Assets/Adobe_Reader_PDF_Icon.png" Width="45" Height="45" 
+                                                   HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                                                <StackPanel Width="320" HorizontalAlignment="Left" VerticalAlignment="Top">
+                                                    <TextBlock Width="300" Text="{Binding DocumentName}" FontSize="20" Foreground="Black" Margin="45,0,0,0" TextWrapping="WrapWholeWords"
+                                                       FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"/>
+                                                    <TextBlock Width="300" Text="{Binding ShortDescription}" FontSize="18" Foreground="Black" Margin="45,0,0,0" TextWrapping="WrapWholeWords"
+                                                       FontFamily="Assets/Fonts/HelveticaNeueMedium.ttf#Helvetica Neue"/>
+                                                    <TextBlock Width="300" Text="{Binding RevisionPlusDate}" FontSize="18" Foreground="Black" Margin="45,0,0,0"
+                                                       FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"/>
+                                                    <Line Y1="10" Y2="10" X1="0" X2="400" Stroke="LightGray" StrokeThickness="2" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Flyout>
                     </Button.Flyout>
                 </Button>
                 <Button Content="Favorites" Style="{StaticResource NavBarButtons}" Grid.Column="6">
