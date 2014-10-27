@@ -151,7 +151,8 @@ namespace SunovionCompliance
                 }
                 foreach (PdfInfo item in documents)
                 {
-                    item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).Year + " Revision " + item.Revision;
+                    item.TitlePlusNew = "New! " + item.DocumentName;
+                    item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).ToString("MM/dd/yyyy") + " Revision " + item.Revision;
                 }
                 // Set updates, favorites after modification to master document list have been made.
                 updates = documents.Where(info => info.Updated == true).ToList();
@@ -231,7 +232,8 @@ namespace SunovionCompliance
                 foreach (PdfInfo item in documents)
                 {
                     await Task.Delay(50);
-                    item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).Year + " Revision " + item.Revision;
+                    item.TitlePlusNew = "New! " + item.DocumentName;
+                    item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).ToString("mm/ddyyy") + " Revision " + item.Revision;
                     tempCollection.Add(item);
                 }
             }
@@ -292,7 +294,8 @@ namespace SunovionCompliance
             tempList = tempList.Where(info => info.Favorite == true).ToList();
             foreach (PdfInfo tempItem in tempList)
             {
-                tempItem.RevisionPlusDate = "Year: " + System.DateTime.Parse(tempItem.RevisionDate).Year + " Revision " + tempItem.Revision;
+                item.TitlePlusNew = "New! " + item.DocumentName;
+                tempItem.RevisionPlusDate = "Year: " + System.DateTime.Parse(tempItem.RevisionDate).ToString("mm/ddyyy") + " Revision " + tempItem.Revision;
             }
             FavoritesList.ItemsSource = tempList;
         }
@@ -320,6 +323,8 @@ namespace SunovionCompliance
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            Clarinet.Play();
+
             // Create a string with the tile template xml.
             // Note that the version is set to "3" and that fallbacks are provided for the Square150x150 and Wide310x150 tile sizes.
             // This is so that the notification can be understood by Windows 8 and Windows 8.1 machines as well.
@@ -340,7 +345,7 @@ namespace SunovionCompliance
                 + "</tile>";
 
             // Create a DOM.
-            Windows.Data.Xml.Dom.XmlDocument tileDOM = new Windows.Data.Xml.Dom.XmlDocument();
+            Windows.Data.Xml.Dom.XmlDocument tileDOM = new Windows.Data.Xml.Dom.XmlDocument(); 
 
             // Load the xml string into the DOM.
             tileDOM.LoadXml(tileXmlString);
@@ -354,9 +359,26 @@ namespace SunovionCompliance
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
+
+            Clarinet.Stop();
             // TileUpdater is also used to clear the tile.
             TileUpdateManager.CreateTileUpdaterForApplication().Clear();
         }
 
+    }
+    public class IsNewConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string culture)
+        {
+            if (value is bool)
+                return (bool)value ? Visibility.Visible : Visibility.Collapsed;
+            else
+                return Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string culture)
+        {
+            return null;
+        }
     }
 }

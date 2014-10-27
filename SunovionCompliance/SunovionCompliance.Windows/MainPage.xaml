@@ -1,5 +1,5 @@
 ﻿<Page
-    x:Class="SunovionCompliance.MainPage"
+    x:Class="SunovionCompliance.MainPage"    
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:SunovionCompliance"
@@ -392,6 +392,7 @@
             <RowDefinition Height="*" MinHeight="805"/>
         </Grid.RowDefinitions>
         <!-- Header area -->
+        <MediaElement Name="Clarinet" Source="/Assets/SoundHelix1.mp3" />
         <StackPanel Grid.Row="0" Margin="0">
             <Grid Height="175">
                 <Grid.ColumnDefinitions>
@@ -559,7 +560,7 @@
                                                         IsChecked="{Binding Favorite}"
                                                         Checked="ImageToggleButton_Checked" Unchecked="ImageToggleButton_Unchecked" />
                             <StackPanel Orientation="Vertical" Grid.Column="2" Height="125">
-                                <TextBlock Text="{Binding DocumentName}" FontSize="26" Foreground="Black" Margin="1,11,1,1"
+                                    <TextBlock Text="{Binding TitlePlusNew}" FontSize="26" Foreground="Black" Margin="1,11,1,1"
                                        FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"/>
                                 <TextBlock Text="{Binding ShortDescription}" FontSize="24" Foreground="Black" Margin="1"  
                                        FontFamily="Assets/Fonts/HelveticaNeueMedium.ttf#Helvetica Neue"/>
@@ -568,7 +569,8 @@
                             </StackPanel>
                             <Button Grid.Column="3" Background="#cbcbcb" Width="180" Margin="0" BorderThickness="0" IsHitTestVisible="False">
                                 <TextBlock Text="VIEW" FontSize="22" Margin="1" Foreground="Black"
-                                           FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"/>
+                                           FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"
+                                           Visibility="{Binding Favorite}"/>
                             </Button>
                         </Grid>
                     </DataTemplate>

@@ -342,6 +342,12 @@
     <Content Include="Assets\CompliancePdfs\Vacation Policy.PDF">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\Clarinet.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\SoundHelix1.mp3">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="blank.html" />
     <Content Include="ga.js" />
     <None Include="packages.config" />

@@ -32,6 +32,8 @@ namespace SunovionCompliance.Model
 
         [Ignore]
         public string RevisionPlusDate { get; set; }
+        [Ignore]
+        public string TitlePlusNew { get; set; }
     }
     
     public class Announcement
