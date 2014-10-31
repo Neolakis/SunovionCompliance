@@ -1,4 +1,5 @@
 ﻿using SQLite;
+using System.Collections.Generic;
 
 namespace SunovionCompliance.Model
 {
@@ -10,6 +11,27 @@ namespace SunovionCompliance.Model
         public int Id { get; set; }
 
         public string Category { get; set; }
+    }
+
+    public class CmsDocumentWrapper
+    {
+        string message { get; set; }
+        string success { get; set; }
+        public List<CmsPdf> data { get; set; }
+    }
+    public class CmsPdf{
+        public int id { get; set; }
+
+        public string category1 { get; set; }
+        public string category2 { get; set; }
+        public string documentName { get; set; }
+        public string revision { get; set; }
+        public string revisionDate { get; set; }
+        public string shortDescription { get; set; }
+        public string fileLocation { get; set; }
+        public string type { get; set; }
+        public string mimeType { get; set; }
+        public string lastModified { get; set; }
     }
 
     [Table("CompliancePdfs")]

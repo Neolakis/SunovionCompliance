@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Runtime.Serialization.Json;
 using System.Text;
@@ -92,10 +93,84 @@ namespace SunovionCompliance
 
         }
         
+        protected async Task<string> UpdateDataFromCMS(){
+            var handler = new HttpClientHandler { UseCookies = false };
+            using (var httpClient = new HttpClient(handler))
+            {
+                //var url = new Uri("http://localhost:3000/documents");
+                var url = new Uri("http://ryanday.net:3000/documents");
+                //var accessToken = "1234";
+                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url))
+                {
+                    //httpRequestMessage.Headers.Add(System.Net.HttpRequestHeader.Authorization.ToString(),
+                    //  string.Format("Bearer {0}", accessToken));
+                    httpRequestMessage.Headers.Add("User-Agent", "Fiddler");
+                    httpRequestMessage.Headers.Add("Cookie", "sunovionsession=MTQxNDY5MDg2OXxEdi1CQkFFQ180SUFBUkFCRUFBQUpmLUNBQUVHYzNSeWFXNW5EQTRBREVGVlZFaFZUa2xSVlVWSlJBVnBiblEyTkFRQ0FBST18FDV9KIYoziRJ31NFVPz0j2pAyzN6poDvdF3phuNKc80=");
+                    using (var httpResponseMessage = await httpClient.SendAsync(httpRequestMessage))
+                    {
+                        // do something with the response
+                        var data = await httpResponseMessage.Content.ReadAsStringAsync();
+
+                        CmsDocumentWrapper cmsDocWrapper;
+                        DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(CmsDocumentWrapper));
+                        using (MemoryStream stream = new MemoryStream(Encoding.Unicode.GetBytes(data)))
+                        {
+                            cmsDocWrapper = serializer.ReadObject(stream) as CmsDocumentWrapper;
+                        }
+                        try
+                        {
+                            SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");
+                            List<PdfInfo> devicePdfDataQuery = await conn.Table<PdfInfo>().ToListAsync();
+                            foreach (CmsPdf cmsItem in cmsDocWrapper.data)
+                            {
+                                PdfInfo newPdfInfo = new PdfInfo();
+                                if (cmsItem.documentName != null && cmsItem.category1 != null && !cmsItem.category1.Equals("Cat1"))
+                                {
+                                    newPdfInfo.Id = cmsItem.id;
+                                    newPdfInfo.DocumentName = cmsItem.documentName;
+                                    newPdfInfo.Category1 = cmsItem.category1;
+                                    newPdfInfo.Revision = (cmsItem.revision != null ? cmsItem.revision : "1.0");
+                                    newPdfInfo.RevisionDate = "10/10/2010";
+                                    newPdfInfo.ShortDescription = cmsItem.shortDescription;
+                                    newPdfInfo.Keyword1 = "keyword";
+                                    newPdfInfo.Favorite = false;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                                if (devicePdfDataQuery.Where(item => item.Id == newPdfInfo.Id).Count() == 0)
+                                {
+                                    newPdfInfo.DocumentName = newPdfInfo.DocumentName.Trim();
+                                    var rowAdded = await conn.InsertAsync(newPdfInfo);
+                                }
+                                else
+                                {
+                                    PdfInfo tempItem = devicePdfDataQuery.Where(item => item.Id == newPdfInfo.Id).First<PdfInfo>();
+                                    tempItem.DocumentName = newPdfInfo.DocumentName;
+                                    //tempItem.Keyword1 = newPdfInfo.Keyword1.Trim();
+                                    await conn.UpdateAsync(tempItem);
+                                }
+                            }
+                        }
+                        catch(Exception e)
+                        {
+                            return data;
+                        }
+                        return data;
+                    }
+                }
+            }
+            return "ASDF";
+        }
         protected async void Page_Loaded(object sender, RoutedEventArgs e)
         {
             MessageDialog test;
             String returnValue = await UpDatabase();
+            test = new MessageDialog(returnValue);
+            //await test.ShowAsync();
+
+            returnValue = await UpdateDataFromCMS();
             test = new MessageDialog(returnValue);
             //await test.ShowAsync();
 
@@ -151,7 +226,7 @@ namespace SunovionCompliance
                 }
                 foreach (PdfInfo item in documents)
                 {
-                    item.TitlePlusNew = "New! " + item.DocumentName;
+                    item.TitlePlusNew = item.DocumentName;
                     item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).ToString("MM/dd/yyyy") + " Revision " + item.Revision;
                 }
                 // Set updates, favorites after modification to master document list have been made.
@@ -232,8 +307,8 @@ namespace SunovionCompliance
                 foreach (PdfInfo item in documents)
                 {
                     await Task.Delay(50);
-                    item.TitlePlusNew = "New! " + item.DocumentName;
-                    item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).ToString("mm/ddyyy") + " Revision " + item.Revision;
+                    item.TitlePlusNew = item.DocumentName;
+                    item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).ToString("mm/dd/yyyy") + " Revision " + item.Revision;
                     tempCollection.Add(item);
                 }
             }
@@ -294,7 +369,7 @@ namespace SunovionCompliance
             tempList = tempList.Where(info => info.Favorite == true).ToList();
             foreach (PdfInfo tempItem in tempList)
             {
-                item.TitlePlusNew = "New! " + item.DocumentName;
+                item.TitlePlusNew = item.DocumentName;
                 tempItem.RevisionPlusDate = "Year: " + System.DateTime.Parse(tempItem.RevisionDate).ToString("mm/ddyyy") + " Revision " + tempItem.Revision;
             }
             FavoritesList.ItemsSource = tempList;
@@ -323,7 +398,7 @@ namespace SunovionCompliance
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Clarinet.Play();
+            //Clarinet.Play();
 
             // Create a string with the tile template xml.
             // Note that the version is set to "3" and that fallbacks are provided for the Square150x150 and Wide310x150 tile sizes.
@@ -360,25 +435,10 @@ namespace SunovionCompliance
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
 
-            Clarinet.Stop();
+            //Clarinet.Stop();
             // TileUpdater is also used to clear the tile.
             TileUpdateManager.CreateTileUpdaterForApplication().Clear();
         }
 
-    }
-    public class IsNewConverter : IValueConverter
-    {
-        public object Convert(object value, Type targetType, object parameter, string culture)
-        {
-            if (value is bool)
-                return (bool)value ? Visibility.Visible : Visibility.Collapsed;
-            else
-                return Visibility.Collapsed;
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, string culture)
-        {
-            return null;
-        }
     }
 }
