@@ -1,5 +1,8 @@
 ﻿using SQLite;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace SunovionCompliance.Model
 {
@@ -40,6 +43,7 @@ namespace SunovionCompliance.Model
         [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
 
+        public int CmsId { get; set; }
         public string Category1 { get; set; }
         public string Category2 { get; set; }
         public string DocumentName { get; set; }
@@ -51,6 +55,8 @@ namespace SunovionCompliance.Model
         public string Keyword1 { get; set; }
         public bool Favorite { get; set; }
         public bool Updated { get; set; }
+        public string mimeType { get; set; }
+        public string lastModified { get; set; }
 
         [Ignore]
         public string RevisionPlusDate { get; set; }
@@ -63,6 +69,30 @@ namespace SunovionCompliance.Model
         public string Title { get; set; }
         public string Body { get; set; }
         public string Date { get; set; }
+    }
+    public static class Helper
+    {
+        public static PdfInfo convertCmsPdfToApp(CmsPdf cmsItem)
+        {
+            PdfInfo newPdfInfo = new PdfInfo();
+            DateTime dateValue;
+
+            newPdfInfo.CmsId = cmsItem.id;
+            newPdfInfo.Category1 = cmsItem.category1;
+            newPdfInfo.Category2 = cmsItem.category2;
+            newPdfInfo.DocumentName = cmsItem.documentName;
+            newPdfInfo.Revision = (cmsItem.revision != null && cmsItem.revision != "" ? cmsItem.revision : "1.0");
+            newPdfInfo.RevisionDate = (DateTime.TryParse(cmsItem.revisionDate, out dateValue) ? cmsItem.revisionDate : "1/1/2000");
+            newPdfInfo.ShortDescription = (cmsItem.shortDescription != null && cmsItem.shortDescription != "" ? cmsItem.shortDescription : "No Description.");
+            newPdfInfo.FileLocation = (cmsItem.fileLocation != null && cmsItem.fileLocation != "" ? cmsItem.fileLocation : null);
+            newPdfInfo.Type = (cmsItem.type != null && cmsItem.type != "" ? cmsItem.type : null);
+            newPdfInfo.Keyword1 = "keyword";
+            newPdfInfo.Favorite = false;
+            newPdfInfo.mimeType = (cmsItem.mimeType != null && cmsItem.mimeType != "" ? cmsItem.mimeType : null);
+            newPdfInfo.lastModified = (DateTime.TryParse(cmsItem.lastModified, out dateValue) ? cmsItem.lastModified : "1/1/2000");
+
+            return newPdfInfo;
+        }
     }
 }
 

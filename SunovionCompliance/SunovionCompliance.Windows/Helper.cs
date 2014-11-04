@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SunovionCompliance.Model;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -9,9 +10,6 @@ using Windows.UI.Xaml.Data;
 
 namespace Mvvm
 {
-    class Helper
-    {
-    }
     public class BooleanToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType,

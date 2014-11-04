@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Runtime.Serialization.Json;
 using System.Text;
@@ -15,6 +17,7 @@ using Windows.ApplicationModel;
 using Windows.Data.Html;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Networking.BackgroundTransfer;
 using Windows.Storage;
 using Windows.UI;
 using Windows.UI.Notifications;
@@ -33,6 +36,11 @@ using Windows.UI.Xaml.Navigation;
 
 namespace SunovionCompliance
 {
+    public class CmsUserClass
+    {
+        public string username { get; set; }
+        public string password { get; set; }
+    }
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
@@ -40,11 +48,16 @@ namespace SunovionCompliance
     {
         public List<CategoryType> categories { get; set; }
         public List<Announcement> announcements { get; set; }
-        public List<PdfInfo> documents { get; set; }
+        public ObservableCollection<PdfInfo> documents { get; set; }
         public List<PdfInfo> updates { get; set; }
         public List<PdfInfo> favorites { get; set; }
+        public string sessionCookie { get; set; }
         public int? LastSelectedIndex;
+        public int? CurrentSelectedIndex;
         public LinearGradientBrush CategoryBackgroundBrush;
+        public Uri CmsURL = new Uri("http://webserv.hwpnj.com:8009/");
+        //public Uri CmsURL = new Uri("http://localhost:3000/");
+        public Uri CmsURL_Production = new Uri("http://webserv.hwpnj.com:8009/");
         
         public MainPage()
         {
@@ -92,20 +105,64 @@ namespace SunovionCompliance
         {
 
         }
-        
-        protected async Task<string> UpdateDataFromCMS(){
+
+        protected async Task<string> GetSessionCookie()
+        {
+            Uri url =  new Uri(CmsURL, "login");
+
+            CookieContainer cookieJar = new CookieContainer();
+            HttpClientHandler handler = new HttpClientHandler()
+            {
+                CookieContainer = cookieJar
+            };
+            cookieJar.Add(CmsURL, new Cookie("sunovionsession2", "cookie_value"));
+            handler.UseCookies = true;
+            handler.UseDefaultCredentials = false;
+
+            using (var client = new HttpClient(handler))
+            {
+                CmsUserClass admin = new CmsUserClass {
+                    username = "admin",
+                    password = "ladeda@"
+                };
+
+                //Create a Json Serializer for our type
+                DataContractJsonSerializer jsonSer = new DataContractJsonSerializer(typeof(CmsUserClass));
+
+                // use the serializer to write the object to a MemoryStream
+                MemoryStream ms = new MemoryStream();
+                jsonSer.WriteObject(ms, admin);
+                ms.Position = 0;
+
+                //use a Stream reader to construct the StringContent (Json)
+                StreamReader sr = new StreamReader(ms);
+                StringContent theContent = new StringContent(sr.ReadToEnd(), System.Text.Encoding.UTF8, "application/json");
+
+                client.DefaultRequestHeaders.Connection.Add("keep-alive");
+                client.DefaultRequestHeaders.Host = "localhost:3000";
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                var response = await client.PostAsync(url, theContent);
+                var responseString = await response.Content.ReadAsStringAsync();
+
+                if (response.ToString().Contains("sunovionsession="))
+                {
+                    String rawResponse = response.ToString();
+                    responseString = rawResponse.Substring(rawResponse.IndexOf("sunovionsession=")).Split(';').First();
+                    sessionCookie = responseString;
+                }
+                return responseString;
+            }
+        }
+        protected async Task<string> UpdateDataFromCMS2(){
             var handler = new HttpClientHandler { UseCookies = false };
             using (var httpClient = new HttpClient(handler))
             {
-                //var url = new Uri("http://localhost:3000/documents");
-                var url = new Uri("http://ryanday.net:3000/documents");
-                //var accessToken = "1234";
+                var url = CmsURL + "documents";
+
                 using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url))
                 {
-                    //httpRequestMessage.Headers.Add(System.Net.HttpRequestHeader.Authorization.ToString(),
-                    //  string.Format("Bearer {0}", accessToken));
-                    httpRequestMessage.Headers.Add("User-Agent", "Fiddler");
-                    httpRequestMessage.Headers.Add("Cookie", "sunovionsession=MTQxNDY5MDg2OXxEdi1CQkFFQ180SUFBUkFCRUFBQUpmLUNBQUVHYzNSeWFXNW5EQTRBREVGVlZFaFZUa2xSVlVWSlJBVnBiblEyTkFRQ0FBST18FDV9KIYoziRJ31NFVPz0j2pAyzN6poDvdF3phuNKc80=");
+                    //httpRequestMessage.Headers.Add("User-Agent", "Fiddler");
+                    httpRequestMessage.Headers.Add("Cookie", sessionCookie);
                     using (var httpResponseMessage = await httpClient.SendAsync(httpRequestMessage))
                     {
                         // do something with the response
@@ -123,33 +180,40 @@ namespace SunovionCompliance
                             List<PdfInfo> devicePdfDataQuery = await conn.Table<PdfInfo>().ToListAsync();
                             foreach (CmsPdf cmsItem in cmsDocWrapper.data)
                             {
-                                PdfInfo newPdfInfo = new PdfInfo();
-                                if (cmsItem.documentName != null && cmsItem.category1 != null && !cmsItem.category1.Equals("Cat1"))
+                                SunovionCompliance.Model.PdfInfo newPdfInfo = new PdfInfo();
+                                if (cmsItem.documentName != null && cmsItem.category1 != null )
                                 {
-                                    newPdfInfo.Id = cmsItem.id;
-                                    newPdfInfo.DocumentName = cmsItem.documentName;
-                                    newPdfInfo.Category1 = cmsItem.category1;
-                                    newPdfInfo.Revision = (cmsItem.revision != null ? cmsItem.revision : "1.0");
-                                    newPdfInfo.RevisionDate = "10/10/2010";
-                                    newPdfInfo.ShortDescription = cmsItem.shortDescription;
-                                    newPdfInfo.Keyword1 = "keyword";
-                                    newPdfInfo.Favorite = false;
+                                    newPdfInfo = SunovionCompliance.Model.Helper.convertCmsPdfToApp(cmsItem);
+
+                                    if (devicePdfDataQuery.Where(item => item.CmsId == newPdfInfo.CmsId).Count() == 0)
+                                    {
+                                        newPdfInfo.DocumentName = newPdfInfo.DocumentName.Trim();
+                                        //newPdfInfo.Updated = true;
+                                        var rowAdded = await conn.InsertAsync(newPdfInfo);
+                                    }
+                                    else
+                                    {
+                                        PdfInfo tempItem = devicePdfDataQuery.Where(item => item.CmsId == newPdfInfo.CmsId).First<PdfInfo>();
+                                        if ( DateTime.Parse(tempItem.lastModified).CompareTo(DateTime.Parse(newPdfInfo.lastModified)) < 0)
+                                        {
+                                            newPdfInfo.Id = tempItem.Id;
+                                            newPdfInfo.Favorite = tempItem.Favorite;
+                                            newPdfInfo.Updated = tempItem.Updated;
+                                            newPdfInfo.Updated = true;
+                                            tempItem = newPdfInfo;
+                                            await conn.UpdateAsync(tempItem);
+                                            
+                                            Uri fileUri = new Uri(@"http://webserv.hwpnj.com:8009/document/" + newPdfInfo.CmsId + @"/data");
+                                            StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                                            StorageFolder newFolder = await localFolder.CreateFolderAsync("CmsFiles", CreationCollisionOption.OpenIfExists);
+                                            string filename = newPdfInfo.DocumentName + ".pdf";
+
+                                            await SaveAsync(fileUri, newFolder, filename);
+                                        }
+                                    }
                                 }
                                 else
                                 {
-                                    break;
-                                }
-                                if (devicePdfDataQuery.Where(item => item.Id == newPdfInfo.Id).Count() == 0)
-                                {
-                                    newPdfInfo.DocumentName = newPdfInfo.DocumentName.Trim();
-                                    var rowAdded = await conn.InsertAsync(newPdfInfo);
-                                }
-                                else
-                                {
-                                    PdfInfo tempItem = devicePdfDataQuery.Where(item => item.Id == newPdfInfo.Id).First<PdfInfo>();
-                                    tempItem.DocumentName = newPdfInfo.DocumentName;
-                                    //tempItem.Keyword1 = newPdfInfo.Keyword1.Trim();
-                                    await conn.UpdateAsync(tempItem);
                                 }
                             }
                         }
@@ -163,6 +227,7 @@ namespace SunovionCompliance
             }
             return "ASDF";
         }
+
         protected async void Page_Loaded(object sender, RoutedEventArgs e)
         {
             MessageDialog test;
@@ -170,9 +235,13 @@ namespace SunovionCompliance
             test = new MessageDialog(returnValue);
             //await test.ShowAsync();
 
-            returnValue = await UpdateDataFromCMS();
+            returnValue = await GetSessionCookie();
             test = new MessageDialog(returnValue);
             //await test.ShowAsync();
+            returnValue = await UpdateDataFromCMS2();
+            test = new MessageDialog(returnValue);
+            //await test.ShowAsync();
+
 
             List<PdfInfo> backendPdfData;
             // acquire file
@@ -212,7 +281,7 @@ namespace SunovionCompliance
                 var query2 = conn.Table<CategoryType>();
                 var query3 = conn.Table<PdfInfo>();
                 categories = await query2.OrderBy(category => category.Category).ToListAsync();
-                documents = await query3.OrderBy(info => info.DocumentName).ToListAsync();
+                documents = new ObservableCollection<PdfInfo>(await query3.OrderBy(info => info.DocumentName).ToListAsync());
                 announcements = new List<Announcement>();
                 announcements.Add(new Announcement() {
                     Title = "Nam ac risus ut turpis laoreet dignissim vitae vel urna.",
@@ -243,53 +312,61 @@ namespace SunovionCompliance
             {
                 test = new MessageDialog(e2.Message);
             }
-
-            //string AnnouncementTest = HtmlUtilities.ConvertToText("<p>Dear Field Sales Professionals,<br/>We'd like to welcome you ... "
-            //    + "and what you believe needs to be changed or improved in future version.<br/><br/>Best Regards<br/><b>The Compliance and Ethics Team</b><br/><br/><b>July 1, 2013</b></p>");
-            //string AnnouncementTest2 = "Dear Field Sales Professionals,We'd like to welcome you ... and what you believe needs to be changed or improved in future version."
-            //    + "Best RegardsThe Compliance and Ethics Team/r/n<Bold>July 1, 2013</Bold>";
-            //((TextBlock)TempAnnouncement).Text = "Asdfadfs";
-            //TextBlock tb = new TextBlock();
-            //tb.TextWrapping = TextWrapping.Wrap;
-            //tb.Margin = new Thickness(10);
-            //tb.FontWeight = FontWeights.Bold;
-            //tb.Text = AnnouncementTest2;
-            //TempAnnouncement = tb;
-
+            
             //await test.ShowAsync();
         }
-
-         private void DocumentList_ItemClick(object sender, ItemClickEventArgs e)
+        
+        private void DocumentList_ItemClick(object sender, ItemClickEventArgs e)
         {
             PdfInfo item = e.ClickedItem as PdfInfo;
-
             if(item != null)
             {
-                ShowPdf(item);
+                ShowPdf(item, sender);
             }
+            
         }
 
         // Launch the URI
-        async void ShowPdf(PdfInfo Item)
+        async void ShowPdf(PdfInfo Item, object sender)
         {
-            
-            if(Item.FileLocation == null){
-                StorageFile databaseFile = await Package.Current.InstalledLocation.GetFileAsync("Assets\\CompliancePdfs\\" + Item.DocumentName + ".pdf");
-                await Windows.System.Launcher.LaunchFileAsync(databaseFile);
-            }
-            else
-            {
-                StorageFile databaseFile = await Package.Current.InstalledLocation.GetFileAsync("Assets\\CompliancePdfs\\" + Item.FileLocation + ".pdf");
-                await Windows.System.Launcher.LaunchFileAsync(databaseFile);
-            }
+            MessageDialog test = new MessageDialog("ASDF");
+            //await test.ShowAsync();
 
-            // Create a Uri object from a URI string 
-            string uriToLaunch = @"http://www.bing.com";
-            var uri = new Uri(uriToLaunch);
-            // Launch the URI
-            //var success = await Windows.System.Launcher.LaunchUriAsync(uri);
+            SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");
+            int primaryKey = Item.Id;
+            Item.Updated = false;
+            await conn.UpdateAsync(Item);
+
+            var query3 = conn.Table<PdfInfo>();
+            List<PdfInfo> tempList = await query3.ToListAsync();
+            UpdatedList.ItemsSource = tempList.Where(info => info.Updated == true).ToList();
+            documents.Where(doc => doc.Id == primaryKey).First().Updated = false;
+
+            if (Item.DocumentName != null)
+            {
+                StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                StorageFolder newFolder = await localFolder.CreateFolderAsync("CmsFiles", CreationCollisionOption.OpenIfExists);
+                StorageFile databaseFile = await newFolder.GetFileAsync("Assets\\CmsFiles\\" + Item.DocumentName + ".pdf");
+                await Windows.System.Launcher.LaunchFileAsync(databaseFile);
+            }
         }
-        
+
+        public async static Task<StorageFile> SaveAsync(
+        Uri fileUri,
+        StorageFolder folder,
+        string fileName)
+        {
+            var file = await folder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
+            var downloader = new BackgroundDownloader();
+            var download = downloader.CreateDownload(
+                fileUri,
+                file);
+
+            var res = await download.StartAsync();
+
+            return file;
+        }
+
         async private void CategoryList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var SelectedIndex = CategoryList.SelectedIndex;
@@ -297,8 +374,8 @@ namespace SunovionCompliance
 
             SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");
             AsyncTableQuery<PdfInfo> relatedItemsQuery = conn.Table<PdfInfo>();
-            relatedItemsQuery = relatedItemsQuery.Where(fi => fi.Category1.ToUpper().Contains(categortySelected.Category)).OrderBy(fi => fi.DocumentName);            
-            documents = await relatedItemsQuery.ToListAsync();
+            relatedItemsQuery = relatedItemsQuery.Where(fi => fi.Category1.ToUpper().Contains(categortySelected.Category)).OrderBy(fi => fi.DocumentName);
+            documents = new ObservableCollection<PdfInfo>(await relatedItemsQuery.ToListAsync());
             if (documents.Count != 0)
             {
                 ObservableCollection<PdfInfo> tempCollection = new ObservableCollection<PdfInfo>();
@@ -321,13 +398,6 @@ namespace SunovionCompliance
             {
                 Color color = Color.FromArgb(255,Convert.ToByte("cb", 16),Convert.ToByte("cb", 16),Convert.ToByte("cb", 16) );
                 ((ListViewItem)CategoryList.ContainerFromIndex(SelectedIndex)).Background = new SolidColorBrush(color);
-
-                //StackPanel SelectedItemStackpanel = (StackPanel) ((ListViewItem)CategoryList.ContainerFromIndex(SelectedIndex)).Content;
-                //((Image)SelectedItemStackpanel.Children[0]).Source = new BitmapImage( new Uri( Package.Current.InstalledLocation.Path + @"\Assets\CategoryIconSelected.png") );
-
-
-                //var messageDialog = new MessageDialog( ((ListViewItem)CategoryList.ContainerFromIndex(SelectedIndex)).Template.GetValue.ToString() );
-                //await messageDialog.ShowAsync();
             }
             if (LastSelectedIndex != null)
             {
@@ -341,7 +411,7 @@ namespace SunovionCompliance
             string queryString = args.QueryText;
 
             SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");
-            documents = await conn.Table<PdfInfo>().Where(item => item.Keyword1 == queryString).ToListAsync();
+            documents = new ObservableCollection<PdfInfo>(await conn.Table<PdfInfo>().Where(item => item.Keyword1 == queryString).ToListAsync());
             List<PdfInfo> tempList = await conn.Table<PdfInfo>().ToListAsync();
             foreach (PdfInfo tempItem in tempList)
             {
@@ -353,7 +423,6 @@ namespace SunovionCompliance
             }
             DocumentList.ItemsSource = documents;
         }
-
 
         private async void AddOrRemoveFavorite(PdfInfo item, bool addFavorite)
         {
@@ -382,6 +451,7 @@ namespace SunovionCompliance
             if (item != null)
             {
                 AddOrRemoveFavorite(item, true);
+                //FavoritesList.ItemsSource = SunovionCompliance.Model.Helper.AddOrRemoveFavorite2(item, true);
             }
 
         }
@@ -393,6 +463,7 @@ namespace SunovionCompliance
             if (item != null)
             {
                 AddOrRemoveFavorite(item, false);
+                //FavoritesList.ItemsSource = SunovionCompliance.Model.Helper.AddOrRemoveFavorite2(item, false);
             }
         }
 

@@ -565,7 +565,7 @@
                                 <StackPanel Orientation="Horizontal">                                    
                                     <TextBlock Text="NEW! - " FontSize="26" Foreground="Black" Margin="1,11,1,1"
                                                FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"
-                                               Visibility="{Binding Favorite, Converter={StaticResource TrueToVisibleConverter} }"/>
+                                               Visibility="{Binding Updated, Converter={StaticResource TrueToVisibleConverter} }"/>
                                     <TextBlock Text="{Binding TitlePlusNew}" FontSize="26" Foreground="Black" Margin="1,11,1,1"
                                        FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"/>
                                 </StackPanel>
