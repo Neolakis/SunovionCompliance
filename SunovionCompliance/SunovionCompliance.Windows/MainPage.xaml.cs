@@ -19,6 +19,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Networking.BackgroundTransfer;
 using Windows.Storage;
+using Windows.Storage.Streams;
 using Windows.UI;
 using Windows.UI.Notifications;
 using Windows.UI.Popups;
@@ -55,8 +56,8 @@ namespace SunovionCompliance
         public int? LastSelectedIndex;
         public int? CurrentSelectedIndex;
         public LinearGradientBrush CategoryBackgroundBrush;
-        public Uri CmsURL = new Uri("http://webserv.hwpnj.com:8009/");
-        //public Uri CmsURL = new Uri("http://localhost:3000/");
+        //public Uri CmsURL = new Uri("http://webserv.hwpnj.com:8009/");
+        public Uri CmsURL = new Uri("http://ryanday.net:3000/");
         public Uri CmsURL_Production = new Uri("http://webserv.hwpnj.com:8009/");
         
         public MainPage()
@@ -106,7 +107,7 @@ namespace SunovionCompliance
 
         }
 
-        protected async Task<string> GetSessionCookie()
+        public async Task<string> GetSessionCookie()
         {
             Uri url =  new Uri(CmsURL, "login");
 
@@ -153,7 +154,8 @@ namespace SunovionCompliance
                 return responseString;
             }
         }
-        protected async Task<string> UpdateDataFromCMS2(){
+        public async Task<string> UpdateDocumentsFromCms()
+        {
             var handler = new HttpClientHandler { UseCookies = false };
             using (var httpClient = new HttpClient(handler))
             {
@@ -178,10 +180,17 @@ namespace SunovionCompliance
                         {
                             SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");
                             List<PdfInfo> devicePdfDataQuery = await conn.Table<PdfInfo>().ToListAsync();
+                            foreach (PdfInfo deviceItem in devicePdfDataQuery)
+                            {
+                                if (cmsDocWrapper.data.Where(item => item.id == deviceItem.CmsId).Count() == 0)
+                                {
+                                    await conn.DeleteAsync(deviceItem);
+                                }
+                            }
                             foreach (CmsPdf cmsItem in cmsDocWrapper.data)
                             {
                                 SunovionCompliance.Model.PdfInfo newPdfInfo = new PdfInfo();
-                                if (cmsItem.documentName != null && cmsItem.category1 != null )
+                                if (cmsItem.documentName != null && cmsItem.category1 != null)
                                 {
                                     newPdfInfo = SunovionCompliance.Model.Helper.convertCmsPdfToApp(cmsItem);
 
@@ -190,25 +199,21 @@ namespace SunovionCompliance
                                         newPdfInfo.DocumentName = newPdfInfo.DocumentName.Trim();
                                         //newPdfInfo.Updated = true;
                                         var rowAdded = await conn.InsertAsync(newPdfInfo);
+
+                                        saveCmsFile(newPdfInfo);
                                     }
                                     else
                                     {
                                         PdfInfo tempItem = devicePdfDataQuery.Where(item => item.CmsId == newPdfInfo.CmsId).First<PdfInfo>();
-                                        if ( DateTime.Parse(tempItem.lastModified).CompareTo(DateTime.Parse(newPdfInfo.lastModified)) < 0)
+                                        if (DateTime.Parse(tempItem.lastModified).CompareTo(DateTime.Parse(newPdfInfo.lastModified)) < 0)
                                         {
                                             newPdfInfo.Id = tempItem.Id;
                                             newPdfInfo.Favorite = tempItem.Favorite;
-                                            newPdfInfo.Updated = tempItem.Updated;
                                             newPdfInfo.Updated = true;
                                             tempItem = newPdfInfo;
                                             await conn.UpdateAsync(tempItem);
-                                            
-                                            Uri fileUri = new Uri(@"http://webserv.hwpnj.com:8009/document/" + newPdfInfo.CmsId + @"/data");
-                                            StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
-                                            StorageFolder newFolder = await localFolder.CreateFolderAsync("CmsFiles", CreationCollisionOption.OpenIfExists);
-                                            string filename = newPdfInfo.DocumentName + ".pdf";
 
-                                            await SaveAsync(fileUri, newFolder, filename);
+                                            saveCmsFile(newPdfInfo);
                                         }
                                     }
                                 }
@@ -217,7 +222,7 @@ namespace SunovionCompliance
                                 }
                             }
                         }
-                        catch(Exception e)
+                        catch (Exception e)
                         {
                             return data;
                         }
@@ -227,21 +232,79 @@ namespace SunovionCompliance
             }
             return "ASDF";
         }
+        public async Task<string> UpdateAnnouncementsFromCms()
+        {
+            var handler = new HttpClientHandler { UseCookies = false };
+            using (var httpClient = new HttpClient(handler))
+            {
+                var url = CmsURL + "announcements";
 
-        protected async void Page_Loaded(object sender, RoutedEventArgs e)
+                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, url))
+                {
+                    httpRequestMessage.Headers.Add("Cookie", sessionCookie);
+                    using (var httpResponseMessage = await httpClient.SendAsync(httpRequestMessage))
+                    {
+                        // do something with the response
+                        var data = await httpResponseMessage.Content.ReadAsStringAsync();
+
+                        CmsAnnouncementWrapper cmsAnnounceWrapper;
+                        DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(CmsAnnouncementWrapper));
+                        using (MemoryStream stream = new MemoryStream(Encoding.Unicode.GetBytes(data)))
+                        {
+                            cmsAnnounceWrapper = serializer.ReadObject(stream) as CmsAnnouncementWrapper;
+                        }
+                        announcements = new List<Announcement>();
+                        foreach (Announcement item in cmsAnnounceWrapper.data)
+                        {
+                            DateTime formattedDate = new DateTime();
+                            if (DateTime.TryParse(item.created, out formattedDate))
+                            {
+                                item.created = formattedDate.ToString("MMM dd, yyyy");
+                                item.sortingDate = formattedDate;
+                            }
+                            else
+                            {
+                                item.created = "";
+                                item.sortingDate = new DateTime(1999, 12, 12);
+                            }
+                            announcements.Add(item);
+                        }
+                        announcements = announcements.OrderByDescending(news => news.sortingDate).ToList();
+
+                        return data;
+                    }
+                }
+            }
+            return "ASDF";
+        }
+
+        private async void saveCmsFile(PdfInfo newPdfInfo)
+        {
+            if (newPdfInfo.mimeType != null && newPdfInfo.mimeType.Equals("application/pdf") )
+            {
+                Uri fileUri = new Uri(@"http://webserv.hwpnj.com:8009/document/" + newPdfInfo.CmsId + @"/data");
+                StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                StorageFolder newFolder = await localFolder.CreateFolderAsync("CmsFiles", CreationCollisionOption.OpenIfExists);
+                string filename = newPdfInfo.DocumentName + ".pdf";
+
+                await SaveAsync(fileUri, newFolder, filename);
+            }
+        }
+
+        public async void Page_Loaded(object sender, RoutedEventArgs e)
         {
             MessageDialog test;
-            String returnValue = await UpDatabase();
-            test = new MessageDialog(returnValue);
+            String returnValue = "Use this for debugging.";
+            
+            // Initialize Database on first open
+            returnValue = await UpDatabase();
+            //test = new MessageDialog(returnValue);
             //await test.ShowAsync();
 
+            // Update data from CMS
             returnValue = await GetSessionCookie();
-            test = new MessageDialog(returnValue);
-            //await test.ShowAsync();
-            returnValue = await UpdateDataFromCMS2();
-            test = new MessageDialog(returnValue);
-            //await test.ShowAsync();
-
+            returnValue = await UpdateDocumentsFromCms();
+            returnValue = await UpdateAnnouncementsFromCms();
 
             List<PdfInfo> backendPdfData;
             // acquire file
@@ -282,12 +345,6 @@ namespace SunovionCompliance
                 var query3 = conn.Table<PdfInfo>();
                 categories = await query2.OrderBy(category => category.Category).ToListAsync();
                 documents = new ObservableCollection<PdfInfo>(await query3.OrderBy(info => info.DocumentName).ToListAsync());
-                announcements = new List<Announcement>();
-                announcements.Add(new Announcement() {
-                    Title = "Nam ac risus ut turpis laoreet dignissim vitae vel urna.",
-                    Body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-                    Date = "June 9, 2013"
-                });
 
                 foreach (CategoryType item in categories)
                 {
@@ -319,7 +376,7 @@ namespace SunovionCompliance
         private void DocumentList_ItemClick(object sender, ItemClickEventArgs e)
         {
             PdfInfo item = e.ClickedItem as PdfInfo;
-            if(item != null)
+            if(item != null && item.DocumentName != null)
             {
                 ShowPdf(item, sender);
             }
@@ -329,9 +386,6 @@ namespace SunovionCompliance
         // Launch the URI
         async void ShowPdf(PdfInfo Item, object sender)
         {
-            MessageDialog test = new MessageDialog("ASDF");
-            //await test.ShowAsync();
-
             SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");
             int primaryKey = Item.Id;
             Item.Updated = false;
@@ -342,29 +396,44 @@ namespace SunovionCompliance
             UpdatedList.ItemsSource = tempList.Where(info => info.Updated == true).ToList();
             documents.Where(doc => doc.Id == primaryKey).First().Updated = false;
 
-            if (Item.DocumentName != null)
+            FileNotFoundException exception = null; 
+            try
             {
                 StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
                 StorageFolder newFolder = await localFolder.CreateFolderAsync("CmsFiles", CreationCollisionOption.OpenIfExists);
-                StorageFile databaseFile = await newFolder.GetFileAsync("Assets\\CmsFiles\\" + Item.DocumentName + ".pdf");
+                StorageFile databaseFile = await newFolder.GetFileAsync(Item.DocumentName + ".pdf");
                 await Windows.System.Launcher.LaunchFileAsync(databaseFile);
             }
+            catch (FileNotFoundException notFound)
+            {
+                exception = notFound;
+            }
+
+            if (exception != null)
+                await new MessageDialog("There is no file associated with this entry.").ShowAsync();
         }
 
-        public async static Task<StorageFile> SaveAsync(
-        Uri fileUri,
-        StorageFolder folder,
-        string fileName)
-        {
-            var file = await folder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
-            var downloader = new BackgroundDownloader();
-            var download = downloader.CreateDownload(
-                fileUri,
-                file);
-
-            var res = await download.StartAsync();
-
-            return file;
+        public async Task SaveAsync(Uri fileUri, StorageFolder folder, string fileName)
+        {            
+            var handler = new HttpClientHandler { UseCookies = false };
+            using (var httpClient = new HttpClient(handler))
+            {
+                using (var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, fileUri))
+                {
+                    //httpRequestMessage.Headers.Add("User-Agent", "Fiddler");
+                    httpRequestMessage.Headers.Add("Cookie", sessionCookie);
+                    using (var httpResponseMessage = await httpClient.SendAsync(httpRequestMessage, HttpCompletionOption.ResponseHeadersRead))
+                    {
+                        StorageFile cmsFile = await folder.CreateFileAsync(fileName, CreationCollisionOption.ReplaceExisting);
+                        var fs = await cmsFile.OpenAsync(FileAccessMode.ReadWrite);
+                        DataWriter writer = new DataWriter(fs.GetOutputStreamAt(0));
+                        writer.WriteBytes(await httpResponseMessage.Content.ReadAsByteArrayAsync());
+                        await writer.StoreAsync();
+                        writer.DetachStream();
+                        await fs.FlushAsync();
+                    }
+                }
+            }            
         }
 
         async private void CategoryList_SelectionChanged(object sender, SelectionChangedEventArgs e)

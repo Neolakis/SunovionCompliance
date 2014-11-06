@@ -439,11 +439,11 @@
                                         <DataTemplate>
                                             <Grid Width="320">
                                                 <StackPanel Width="320" HorizontalAlignment="Left" VerticalAlignment="Top">
-                                                    <TextBlock Width="300" Text="{Binding Title}" FontSize="20" Foreground="Black" Margin="0" TextWrapping="WrapWholeWords"
+                                                    <TextBlock Width="300" Text="{Binding title}" FontSize="20" Foreground="Black" Margin="0" TextWrapping="WrapWholeWords"
                                                        FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"/>
-                                                    <TextBlock Width="300" Text="{Binding Date}" FontSize="18" Foreground="Black" Margin="0"
+                                                    <TextBlock Width="300" Text="{Binding created}" FontSize="18" Foreground="Black" Margin="0"
                                                        FontFamily="Assets/Fonts/HelveticaNeueMedium.ttf#Helvetica Neue" FontStyle="Italic"/>
-                                                    <TextBlock Width="300" Text="{Binding Body}" FontSize="18" Foreground="Black" Margin="0" TextWrapping="WrapWholeWords"
+                                                    <TextBlock Width="300" Text="{Binding body}" FontSize="18" Foreground="Black" Margin="0" TextWrapping="WrapWholeWords"
                                                        FontFamily="Assets/Fonts/HelveticaNeueMedium.ttf#Helvetica Neue"/>
                                                     <Line Y1="10" Y2="10" X1="0" X2="400" Stroke="LightGray" StrokeThickness="2" />
                                                 </StackPanel>

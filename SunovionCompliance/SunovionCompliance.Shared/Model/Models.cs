@@ -16,6 +16,12 @@ namespace SunovionCompliance.Model
         public string Category { get; set; }
     }
 
+    public class CmsAnnouncementWrapper
+    {
+        string message { get; set; }
+        string success { get; set; }
+        public List<Announcement> data { get; set; }
+    }
     public class CmsDocumentWrapper
     {
         string message { get; set; }
@@ -35,6 +41,7 @@ namespace SunovionCompliance.Model
         public string type { get; set; }
         public string mimeType { get; set; }
         public string lastModified { get; set; }
+        public List<string> keywords { get; set; }
     }
 
     [Table("CompliancePdfs")]
@@ -63,12 +70,26 @@ namespace SunovionCompliance.Model
         [Ignore]
         public string TitlePlusNew { get; set; }
     }
-    
+
+    [Table("Announcements")]
     public class Announcement
     {
-        public string Title { get; set; }
-        public string Body { get; set; }
-        public string Date { get; set; }
+        [PrimaryKey, AutoIncrement]
+        public int id { get; set; }
+        public string title { get; set; }
+        public string body { get; set; }
+        public string created { get; set; }
+
+        [Ignore]
+        public DateTime sortingDate { get; set; }
+    }
+    [Table("Keywords")]
+    public class Keyword
+    {
+        [PrimaryKey, AutoIncrement]
+        public int id { get; set; }
+        public int cmsId { get; set; }
+        public string keyword { get; set; }
     }
     public static class Helper
     {
