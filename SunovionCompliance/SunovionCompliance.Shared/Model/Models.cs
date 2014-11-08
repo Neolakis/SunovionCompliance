@@ -59,7 +59,6 @@ namespace SunovionCompliance.Model
         public string ShortDescription { get; set; }
         public string FileLocation { get; set; }
         public string Type { get; set; }
-        public string Keyword1 { get; set; }
         public bool Favorite { get; set; }
         public bool Updated { get; set; }
         public string mimeType { get; set; }
@@ -107,7 +106,6 @@ namespace SunovionCompliance.Model
             newPdfInfo.ShortDescription = (cmsItem.shortDescription != null && cmsItem.shortDescription != "" ? cmsItem.shortDescription : "No Description.");
             newPdfInfo.FileLocation = (cmsItem.fileLocation != null && cmsItem.fileLocation != "" ? cmsItem.fileLocation : null);
             newPdfInfo.Type = (cmsItem.type != null && cmsItem.type != "" ? cmsItem.type : null);
-            newPdfInfo.Keyword1 = "keyword";
             newPdfInfo.Favorite = false;
             newPdfInfo.mimeType = (cmsItem.mimeType != null && cmsItem.mimeType != "" ? cmsItem.mimeType : null);
             newPdfInfo.lastModified = (DateTime.TryParse(cmsItem.lastModified, out dateValue) ? cmsItem.lastModified : "1/1/2000");

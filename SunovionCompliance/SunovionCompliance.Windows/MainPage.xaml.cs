@@ -96,7 +96,7 @@ namespace SunovionCompliance
                 }
                 catch (Exception e)
                 {
-                    return "Failed to Copy File!";
+                    return "Failed to Copy File! - " + e.Message;
                 }
             }
             return "Unexpected result.";
@@ -180,6 +180,11 @@ namespace SunovionCompliance
                         {
                             SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");
                             List<PdfInfo> devicePdfDataQuery = await conn.Table<PdfInfo>().ToListAsync();
+                            List<Keyword> deviceKeywordQuery = await conn.Table<Keyword>().ToListAsync();
+                            foreach (Keyword deviceItem in deviceKeywordQuery)
+                            {
+                                await conn.DeleteAsync(deviceItem);
+                            }
                             foreach (PdfInfo deviceItem in devicePdfDataQuery)
                             {
                                 if (cmsDocWrapper.data.Where(item => item.id == deviceItem.CmsId).Count() == 0)
@@ -216,6 +221,15 @@ namespace SunovionCompliance
                                             saveCmsFile(newPdfInfo);
                                         }
                                     }
+
+                                    foreach (string keywordItem in cmsItem.keywords)
+                                    {
+                                        Keyword newKeyword = new Keyword(){
+                                            cmsId = cmsItem.id,
+                                            keyword = keywordItem
+                                        };
+                                        await conn.InsertAsync(newKeyword);
+                                    }
                                 }
                                 else
                                 {
@@ -224,13 +238,12 @@ namespace SunovionCompliance
                         }
                         catch (Exception e)
                         {
-                            return data;
+                            return data + e.Message;
                         }
                         return data;
                     }
                 }
             }
-            return "ASDF";
         }
         public async Task<string> UpdateAnnouncementsFromCms()
         {
@@ -275,7 +288,6 @@ namespace SunovionCompliance
                     }
                 }
             }
-            return "ASDF";
         }
 
         private async void saveCmsFile(PdfInfo newPdfInfo)
@@ -292,14 +304,13 @@ namespace SunovionCompliance
         }
 
         public async void Page_Loaded(object sender, RoutedEventArgs e)
-        {
-            MessageDialog test;
+        {            
             String returnValue = "Use this for debugging.";
+            MessageDialog test = new MessageDialog(returnValue);
+            //await test.ShowAsync();
             
             // Initialize Database on first open
             returnValue = await UpDatabase();
-            //test = new MessageDialog(returnValue);
-            //await test.ShowAsync();
 
             // Update data from CMS
             returnValue = await GetSessionCookie();
@@ -350,11 +361,7 @@ namespace SunovionCompliance
                 {
                     item.Category = item.Category.ToUpper();
                 }
-                foreach (PdfInfo item in documents)
-                {
-                    item.TitlePlusNew = item.DocumentName;
-                    item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).ToString("MM/dd/yyyy") + " Revision " + item.Revision;
-                }
+                formatDocumentList();
                 // Set updates, favorites after modification to master document list have been made.
                 updates = documents.Where(info => info.Updated == true).ToList();
                 favorites = documents.Where(info => info.Favorite == true).ToList();
@@ -371,6 +378,15 @@ namespace SunovionCompliance
             }
             
             //await test.ShowAsync();
+        }
+
+        private void formatDocumentList()
+        {
+            foreach (PdfInfo item in documents)
+            {
+                item.TitlePlusNew = item.DocumentName;
+                item.RevisionPlusDate = "Date: " + System.DateTime.Parse(item.RevisionDate).ToString("MM/dd/yyyy") + " Revision " + item.Revision;
+            }
         }
         
         private void DocumentList_ItemClick(object sender, ItemClickEventArgs e)
@@ -477,19 +493,26 @@ namespace SunovionCompliance
 
         private async void SearchBox_QuerySubmitted(SearchBox sender, SearchBoxQuerySubmittedEventArgs args)
         {
+            // User entered search string.
             string queryString = args.QueryText;
 
+            // Grabbing Keywords and Wild card keywords seperately
             SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");
-            documents = new ObservableCollection<PdfInfo>(await conn.Table<PdfInfo>().Where(item => item.Keyword1 == queryString).ToListAsync());
-            List<PdfInfo> tempList = await conn.Table<PdfInfo>().ToListAsync();
-            foreach (PdfInfo tempItem in tempList)
-            {
-                string wildCardQuery = tempItem.Keyword1;
-                if (tempItem.Keyword1.Contains('%') && queryString.Contains(wildCardQuery.Trim('%')))
-                {
-                    documents.Add(tempItem);
-                }
+            List<Keyword> keywordList = await conn.Table<Keyword>().Where(item => item.keyword == queryString).ToListAsync();
+            List<Keyword> wildcardList = await conn.Table<Keyword>().ToListAsync();
+            documents = new ObservableCollection<PdfInfo>();
+
+            foreach (Keyword keywordItem in keywordList)
+            {                
+                documents.Add( await conn.Table<PdfInfo>().Where(document => document.CmsId == keywordItem.cmsId).FirstAsync() );
             }
+            foreach (Keyword keywordItem in wildcardList)
+            {
+                if (keywordItem.keyword.Contains('%') && queryString.Contains(keywordItem.keyword.Trim('%')))
+                    documents.Add(await conn.Table<PdfInfo>().Where(document => document.CmsId == keywordItem.cmsId).FirstAsync());
+            }
+
+            formatDocumentList();
             DocumentList.ItemsSource = documents;
         }
 
@@ -508,7 +531,7 @@ namespace SunovionCompliance
             foreach (PdfInfo tempItem in tempList)
             {
                 item.TitlePlusNew = item.DocumentName;
-                tempItem.RevisionPlusDate = "Year: " + System.DateTime.Parse(tempItem.RevisionDate).ToString("mm/ddyyy") + " Revision " + tempItem.Revision;
+                tempItem.RevisionPlusDate = "Date: " + System.DateTime.Parse(tempItem.RevisionDate).ToString("MM/dd/yyyy") + " Revision " + tempItem.Revision;
             }
             FavoritesList.ItemsSource = tempList;
         }

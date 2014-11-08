@@ -2976,7 +2976,8 @@ namespace SQLite
 			if (r != Result.OK) {
 				throw SQLiteException.New (r, GetErrmsg (db));
 			}
-			return stmt;
+			
+return stmt;
 		}
 
 		[DllImport("sqlite3", EntryPoint = "sqlite3_step", CallingConvention=CallingConvention.Cdecl)]
