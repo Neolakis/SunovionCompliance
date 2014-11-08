@@ -18,6 +18,7 @@ using Windows.Data.Html;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Networking.BackgroundTransfer;
+using Windows.Networking.Connectivity;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI;
@@ -57,7 +58,8 @@ namespace SunovionCompliance
         public int? CurrentSelectedIndex;
         public LinearGradientBrush CategoryBackgroundBrush;
         //public Uri CmsURL = new Uri("http://webserv.hwpnj.com:8009/");
-        public Uri CmsURL = new Uri("http://ryanday.net:3000/");
+        //public Uri CmsURL = new Uri("http://ryanday.net:3000/");
+        public Uri CmsURL = new Uri("http://localhost:3000/");
         public Uri CmsURL_Production = new Uri("http://webserv.hwpnj.com:8009/");
         
         public MainPage()
@@ -202,7 +204,7 @@ namespace SunovionCompliance
                                     if (devicePdfDataQuery.Where(item => item.CmsId == newPdfInfo.CmsId).Count() == 0)
                                     {
                                         newPdfInfo.DocumentName = newPdfInfo.DocumentName.Trim();
-                                        //newPdfInfo.Updated = true;
+                                        newPdfInfo.Updated = true;
                                         var rowAdded = await conn.InsertAsync(newPdfInfo);
 
                                         saveCmsFile(newPdfInfo);
@@ -266,6 +268,13 @@ namespace SunovionCompliance
                         {
                             cmsAnnounceWrapper = serializer.ReadObject(stream) as CmsAnnouncementWrapper;
                         }
+
+                        SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");
+                        List<Announcement> deviceAnnouncementsQuery = await conn.Table<Announcement>().ToListAsync();
+                        foreach (Announcement deviceItem in deviceAnnouncementsQuery)
+                        {
+                            await conn.DeleteAsync(deviceItem);
+                        }
                         announcements = new List<Announcement>();
                         foreach (Announcement item in cmsAnnounceWrapper.data)
                         {
@@ -283,6 +292,7 @@ namespace SunovionCompliance
                             announcements.Add(item);
                         }
                         announcements = announcements.OrderByDescending(news => news.sortingDate).ToList();
+                        await conn.InsertAllAsync(announcements);
 
                         return data;
                     }
@@ -294,7 +304,7 @@ namespace SunovionCompliance
         {
             if (newPdfInfo.mimeType != null && newPdfInfo.mimeType.Equals("application/pdf") )
             {
-                Uri fileUri = new Uri(@"http://webserv.hwpnj.com:8009/document/" + newPdfInfo.CmsId + @"/data");
+                Uri fileUri = new Uri(CmsURL + "document/" + newPdfInfo.CmsId + @"/data");
                 StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
                 StorageFolder newFolder = await localFolder.CreateFolderAsync("CmsFiles", CreationCollisionOption.OpenIfExists);
                 string filename = newPdfInfo.DocumentName + ".pdf";
@@ -306,6 +316,7 @@ namespace SunovionCompliance
         public async void Page_Loaded(object sender, RoutedEventArgs e)
         {            
             String returnValue = "Use this for debugging.";
+            returnValue = "Am I connected to the internet? " + IsConnectedToInternet();
             MessageDialog test = new MessageDialog(returnValue);
             //await test.ShowAsync();
             
@@ -313,9 +324,18 @@ namespace SunovionCompliance
             returnValue = await UpDatabase();
 
             // Update data from CMS
-            returnValue = await GetSessionCookie();
-            returnValue = await UpdateDocumentsFromCms();
-            returnValue = await UpdateAnnouncementsFromCms();
+            if (IsConnectedToInternet())
+            {
+                returnValue = await GetSessionCookie();
+                returnValue = await UpdateDocumentsFromCms();
+                returnValue = await UpdateAnnouncementsFromCms();
+            }
+            else
+            {
+                test = new MessageDialog("Not connected to the internet, unable to update list of Compliance PDFs.");
+                await test.ShowAsync();
+            }
+            await UpdateLiveTile();
 
             List<PdfInfo> backendPdfData;
             // acquire file
@@ -470,7 +490,7 @@ namespace SunovionCompliance
                 {
                     await Task.Delay(50);
                     item.TitlePlusNew = item.DocumentName;
-                    item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).ToString("mm/dd/yyyy") + " Revision " + item.Revision;
+                    item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).ToString("MM/dd/yyyy") + " Revision " + item.Revision;
                     tempCollection.Add(item);
                 }
             }
@@ -561,47 +581,52 @@ namespace SunovionCompliance
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            //Clarinet.Play();
+        }
 
-            // Create a string with the tile template xml.
-            // Note that the version is set to "3" and that fallbacks are provided for the Square150x150 and Wide310x150 tile sizes.
-            // This is so that the notification can be understood by Windows 8 and Windows 8.1 machines as well.
-            string message = "Last update was at " + DateTime.Now.ToString("h:mm tt") + Environment.NewLine + "0 Updates were downloaded."; 
-            string tileXmlString =
-                "<tile>"
-                + "<visual version='3'>"
-                + "<binding template='TileSquare150x150Text04' fallback='TileSquareText04'>"
-                + "<text id='1'>"+message+"</text>"
-                + "</binding>"
-                + "<binding template='TileWide310x150Text03' fallback='TileWideText03'>"
-                + "<text id='1'>" + message + "</text>"
-                + "</binding>"
-                + "<binding template='TileSquare310x310Text09'>"
-                + "<text id='1'>" + message + "</text>"
-                + "</binding>"
-                + "</visual>"
-                + "</tile>";
-
-            // Create a DOM.
-            Windows.Data.Xml.Dom.XmlDocument tileDOM = new Windows.Data.Xml.Dom.XmlDocument(); 
-
-            // Load the xml string into the DOM.
-            tileDOM.LoadXml(tileXmlString);
-
-            // Create a tile notification.
-            TileNotification tile = new TileNotification(tileDOM);
-
-            // Send the notification to the application? tile.
-            //TileUpdateManager.CreateTileUpdaterForApplication().Update(tile);
+        private async Task UpdateLiveTile()
+        {
+            BadgeUpdateManager.CreateBadgeUpdaterForApplication().Clear();
+            SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDB.db");
+            int updateCount = await conn.Table<PdfInfo>().Where(document => document.Updated == true).CountAsync();
+            if (updateCount > 0)
+                UpdateBadgeWithNumberWithStringManipulation(updateCount);
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-
-            //Clarinet.Stop();
-            // TileUpdater is also used to clear the tile.
-            TileUpdateManager.CreateTileUpdaterForApplication().Clear();
+        }
+        
+        public static bool IsConnectedToInternet()
+        {
+            ConnectionProfile connectionProfile = NetworkInformation.GetInternetConnectionProfile();
+            //return (connectionProfile != null && connectionProfile.GetNetworkConnectivityLevel() == NetworkConnectivityLevel.InternetAccess);
+            return true;
         }
 
+        void UpdateBadgeWithNumberWithStringManipulation(int number)
+        {
+            // Create a string with the badge template xml.
+            string badgeXmlString = "<badge value='" + number + "'/>";
+            Windows.Data.Xml.Dom.XmlDocument badgeDOM = new Windows.Data.Xml.Dom.XmlDocument();
+            try
+            {
+                // Create a DOM.
+                badgeDOM.LoadXml(badgeXmlString);
+
+                // Load the xml string into the DOM, catching any invalid xml characters.
+                BadgeNotification badge = new BadgeNotification(badgeDOM);
+
+                // Create a badge notification and send it to the application’s tile.
+                BadgeUpdateManager.CreateBadgeUpdaterForApplication().Update(badge);
+
+                //OutputTextBlock.Text = badgeDOM.GetXml();
+                //rootPage.NotifyUser("Badge sent", NotifyType.StatusMessage);
+            }
+            catch (Exception)
+            {
+                //OutputTextBlock.Text = string.Empty;
+                //rootPage.NotifyUser("Error loading the xml, check for invalid characters in the input", NotifyType.ErrorMessage);
+            }
+        }
     }
 }
