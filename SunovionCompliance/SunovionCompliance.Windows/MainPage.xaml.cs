@@ -57,9 +57,9 @@ namespace SunovionCompliance
         public int? LastSelectedIndex;
         public int? CurrentSelectedIndex;
         public LinearGradientBrush CategoryBackgroundBrush;
-        //public Uri CmsURL = new Uri("http://webserv.hwpnj.com:8009/");
+        public Uri CmsURL = new Uri("http://webserv.hwpnj.com:8009/");
         //public Uri CmsURL = new Uri("http://ryanday.net:3000/");
-        public Uri CmsURL = new Uri("http://localhost:3000/");
+        //public Uri CmsURL = new Uri("http://localhost:3000/");
         public Uri CmsURL_Production = new Uri("http://webserv.hwpnj.com:8009/");
         
         public MainPage()
@@ -311,6 +311,15 @@ namespace SunovionCompliance
 
                 await SaveAsync(fileUri, newFolder, filename);
             }
+            else if (newPdfInfo.mimeType != null && newPdfInfo.mimeType.Equals("audio/mpeg"))
+            {
+                Uri fileUri = new Uri(CmsURL + "document/" + newPdfInfo.CmsId + @"/data");
+                StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
+                StorageFolder newFolder = await localFolder.CreateFolderAsync("CmsFiles", CreationCollisionOption.OpenIfExists);
+                string filename = newPdfInfo.DocumentName + ".mp3";
+
+                await SaveAsync(fileUri, newFolder, filename);
+            }
         }
 
         public async void Page_Loaded(object sender, RoutedEventArgs e)
@@ -431,14 +440,28 @@ namespace SunovionCompliance
             List<PdfInfo> tempList = await query3.ToListAsync();
             UpdatedList.ItemsSource = tempList.Where(info => info.Updated == true).ToList();
             documents.Where(doc => doc.Id == primaryKey).First().Updated = false;
-
+            await UpdateLiveTile();
+            if (Item.mimeType == null || (Item.mimeType != "application/pdf" && Item.mimeType != "audio/mpeg"))
+            {
+                await new MessageDialog("There is no file type associated with this entry.").ShowAsync();
+                return;
+            }
             FileNotFoundException exception = null; 
             try
             {
                 StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
                 StorageFolder newFolder = await localFolder.CreateFolderAsync("CmsFiles", CreationCollisionOption.OpenIfExists);
-                StorageFile databaseFile = await newFolder.GetFileAsync(Item.DocumentName + ".pdf");
-                await Windows.System.Launcher.LaunchFileAsync(databaseFile);
+                StorageFile databaseFile;
+                if (Item.mimeType == "audio/mpeg")
+                {
+                    databaseFile = await newFolder.GetFileAsync(Item.DocumentName + ".mp3");
+                    await Windows.System.Launcher.LaunchFileAsync(databaseFile);
+                }
+                else if (Item.mimeType == "application/pdf")
+                {
+                    databaseFile = await newFolder.GetFileAsync(Item.DocumentName + ".pdf");
+                    await Windows.System.Launcher.LaunchFileAsync(databaseFile);
+                }
             }
             catch (FileNotFoundException notFound)
             {
@@ -490,7 +513,7 @@ namespace SunovionCompliance
                 {
                     await Task.Delay(50);
                     item.TitlePlusNew = item.DocumentName;
-                    item.RevisionPlusDate = "Year: " + System.DateTime.Parse(item.RevisionDate).ToString("MM/dd/yyyy") + " Revision " + item.Revision;
+                    item.RevisionPlusDate = "Date: " + System.DateTime.Parse(item.RevisionDate).ToString("MM/dd/yyyy") + " Revision " + item.Revision;
                     tempCollection.Add(item);
                 }
             }
@@ -599,8 +622,7 @@ namespace SunovionCompliance
         public static bool IsConnectedToInternet()
         {
             ConnectionProfile connectionProfile = NetworkInformation.GetInternetConnectionProfile();
-            //return (connectionProfile != null && connectionProfile.GetNetworkConnectivityLevel() == NetworkConnectivityLevel.InternetAccess);
-            return true;
+            return (connectionProfile != null && connectionProfile.GetNetworkConnectivityLevel() == NetworkConnectivityLevel.InternetAccess);
         }
 
         void UpdateBadgeWithNumberWithStringManipulation(int number)

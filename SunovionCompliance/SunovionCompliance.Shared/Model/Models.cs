@@ -103,7 +103,7 @@ namespace SunovionCompliance.Model
             newPdfInfo.DocumentName = cmsItem.documentName;
             newPdfInfo.Revision = (cmsItem.revision != null && cmsItem.revision != "" ? cmsItem.revision : "1.0");
             newPdfInfo.RevisionDate = (DateTime.TryParse(cmsItem.revisionDate, out dateValue) ? cmsItem.revisionDate : "1/1/2000");
-            newPdfInfo.ShortDescription = (cmsItem.shortDescription != null && cmsItem.shortDescription != "" ? cmsItem.shortDescription : "No Description.");
+            newPdfInfo.ShortDescription = (cmsItem.shortDescription != null && cmsItem.shortDescription != "" ? cmsItem.shortDescription : " ");
             newPdfInfo.FileLocation = (cmsItem.fileLocation != null && cmsItem.fileLocation != "" ? cmsItem.fileLocation : null);
             newPdfInfo.Type = (cmsItem.type != null && cmsItem.type != "" ? cmsItem.type : null);
             newPdfInfo.Favorite = false;
