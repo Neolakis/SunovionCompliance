@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest">
-  <Identity Name="ff85e24d-ee40-4e11-a3c5-a343c4c5f83e" Publisher="CN=Kyle" Version="1.0.0.4" />
+  <Identity Name="ff85e24d-ee40-4e11-a3c5-a343c4c5f83e" Publisher="CN=Kyle" Version="1.0.0.5" />
   <Properties>
     <DisplayName>SunovionCompliance.Windows</DisplayName>
     <PublisherDisplayName>Kyle</PublisherDisplayName>

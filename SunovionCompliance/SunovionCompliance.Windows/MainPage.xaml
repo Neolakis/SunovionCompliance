@@ -431,10 +431,10 @@
                 <SearchBox PlaceholderText="Search..."  FontSize="30" Height="60"  Width="Auto" Margin="25,20,25,20" Grid.Column="2"
                            FocusOnKeyboardInput="False" QuerySubmitted="SearchBox_QuerySubmitted" />
                 <Line X1="0" Y1="20" Y2="80" Stroke="White" StrokeThickness="2" Grid.Column="3" />
-                <Button Content="Announcements" Style="{StaticResource NavBarButtons}" Grid.Column="4" Click="Button_Click">
+                <Button Content="Announcements" Style="{StaticResource NavBarButtons}" Grid.Column="4">
                     <Button.Flyout>
-                            <Flyout Placement="Bottom">
-                                <ListView x:Name="AnnouncementList" Margin="0" Padding="0,0,0,0" Width="345" HorizontalAlignment="Stretch" >
+                            <Flyout Placement="Bottom" Closed="Flyout_Closed">
+                                <ListView x:Name="AnnouncementList" Margin="0" Padding="0,0,0,0" Width="345" HorizontalAlignment="Stretch" SelectionMode="None" >
                                     <ListView.ItemTemplate>
                                         <DataTemplate>
                                             <Grid Width="320">

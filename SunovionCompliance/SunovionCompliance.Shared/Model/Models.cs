@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using System.IO;
 
 namespace SunovionCompliance.Model
 {
@@ -75,9 +76,11 @@ namespace SunovionCompliance.Model
     {
         [PrimaryKey, AutoIncrement]
         public int id { get; set; }
+        public int CmsId { get; set; }
         public string title { get; set; }
         public string body { get; set; }
         public string created { get; set; }
+        public bool Updated { get; set; }
 
         [Ignore]
         public DateTime sortingDate { get; set; }
@@ -104,11 +107,19 @@ namespace SunovionCompliance.Model
             newPdfInfo.Revision = (cmsItem.revision != null && cmsItem.revision != "" ? cmsItem.revision : "1.0");
             newPdfInfo.RevisionDate = (DateTime.TryParse(cmsItem.revisionDate, out dateValue) ? cmsItem.revisionDate : "1/1/2000");
             newPdfInfo.ShortDescription = (cmsItem.shortDescription != null && cmsItem.shortDescription != "" ? cmsItem.shortDescription : " ");
-            newPdfInfo.FileLocation = (cmsItem.fileLocation != null && cmsItem.fileLocation != "" ? cmsItem.fileLocation : null);
             newPdfInfo.Type = (cmsItem.type != null && cmsItem.type != "" ? cmsItem.type : null);
             newPdfInfo.Favorite = false;
             newPdfInfo.mimeType = (cmsItem.mimeType != null && cmsItem.mimeType != "" ? cmsItem.mimeType : null);
             newPdfInfo.lastModified = (DateTime.TryParse(cmsItem.lastModified, out dateValue) ? cmsItem.lastModified : "1/1/2000");
+
+
+            newPdfInfo.FileLocation = newPdfInfo.DocumentName;
+            string invalid = new string(Path.GetInvalidFileNameChars() );
+
+            foreach (char c in invalid)
+            {
+                newPdfInfo.FileLocation = newPdfInfo.FileLocation.Replace(c.ToString(), "");
+            }
 
             return newPdfInfo;
         }

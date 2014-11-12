@@ -271,10 +271,6 @@ namespace SunovionCompliance
 
                         SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");
                         List<Announcement> deviceAnnouncementsQuery = await conn.Table<Announcement>().ToListAsync();
-                        foreach (Announcement deviceItem in deviceAnnouncementsQuery)
-                        {
-                            await conn.DeleteAsync(deviceItem);
-                        }
                         announcements = new List<Announcement>();
                         foreach (Announcement item in cmsAnnounceWrapper.data)
                         {
@@ -289,10 +285,21 @@ namespace SunovionCompliance
                                 item.created = "";
                                 item.sortingDate = new DateTime(1999, 12, 12);
                             }
+                            item.Updated = true;
+                            item.CmsId = item.id;
+
+                            if (deviceAnnouncementsQuery.Where(appItem => appItem.CmsId == item.id).Count() == 0)
+                            {
+                                await conn.InsertAsync(item);
+                            }
+                            else
+                            {
+                                Announcement tempAnnouncment = deviceAnnouncementsQuery.Where(appItem => appItem.CmsId == item.id).First();
+                                item.Updated = tempAnnouncment.Updated;
+                            }
                             announcements.Add(item);
                         }
                         announcements = announcements.OrderByDescending(news => news.sortingDate).ToList();
-                        await conn.InsertAllAsync(announcements);
 
                         return data;
                     }
@@ -307,7 +314,7 @@ namespace SunovionCompliance
                 Uri fileUri = new Uri(CmsURL + "document/" + newPdfInfo.CmsId + @"/data");
                 StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
                 StorageFolder newFolder = await localFolder.CreateFolderAsync("CmsFiles", CreationCollisionOption.OpenIfExists);
-                string filename = newPdfInfo.DocumentName + ".pdf";
+                string filename = newPdfInfo.FileLocation + ".pdf";
 
                 await SaveAsync(fileUri, newFolder, filename);
             }
@@ -316,7 +323,7 @@ namespace SunovionCompliance
                 Uri fileUri = new Uri(CmsURL + "document/" + newPdfInfo.CmsId + @"/data");
                 StorageFolder localFolder = Windows.Storage.ApplicationData.Current.LocalFolder;
                 StorageFolder newFolder = await localFolder.CreateFolderAsync("CmsFiles", CreationCollisionOption.OpenIfExists);
-                string filename = newPdfInfo.DocumentName + ".mp3";
+                string filename = newPdfInfo.FileLocation + ".mp3";
 
                 await SaveAsync(fileUri, newFolder, filename);
             }
@@ -327,6 +334,7 @@ namespace SunovionCompliance
             String returnValue = "Use this for debugging.";
             returnValue = "Am I connected to the internet? " + IsConnectedToInternet();
             MessageDialog test = new MessageDialog(returnValue);
+            HttpRequestException displayError = null;
             //await test.ShowAsync();
             
             // Initialize Database on first open
@@ -335,9 +343,19 @@ namespace SunovionCompliance
             // Update data from CMS
             if (IsConnectedToInternet())
             {
-                returnValue = await GetSessionCookie();
-                returnValue = await UpdateDocumentsFromCms();
-                returnValue = await UpdateAnnouncementsFromCms();
+                try
+                {
+                    returnValue = await GetSessionCookie();
+                    returnValue = await UpdateDocumentsFromCms();
+                    returnValue = await UpdateAnnouncementsFromCms();
+                }
+                catch(HttpRequestException error){
+                    displayError = error;
+                }
+                if (displayError != null)
+                {
+                    await new MessageDialog("Unable to connect to CMS, list of Compliance PDFs was not updated.").ShowAsync();
+                }
             }
             else
             {
@@ -383,8 +401,10 @@ namespace SunovionCompliance
 
                 var query2 = conn.Table<CategoryType>();
                 var query3 = conn.Table<PdfInfo>();
+                var query4 = conn.Table<Announcement>();
                 categories = await query2.OrderBy(category => category.Category).ToListAsync();
                 documents = new ObservableCollection<PdfInfo>(await query3.OrderBy(info => info.DocumentName).ToListAsync());
+                announcements = await query4.Where(item => item.Updated == true).OrderByDescending(news => news.Updated).ToListAsync();
 
                 foreach (CategoryType item in categories)
                 {
@@ -601,9 +621,21 @@ namespace SunovionCompliance
                 //FavoritesList.ItemsSource = SunovionCompliance.Model.Helper.AddOrRemoveFavorite2(item, false);
             }
         }
-
-        private void Button_Click(object sender, RoutedEventArgs e)
+        
+        private void Flyout_Closed(object sender, object e)
         {
+            markAllAnnouncementsRead();
+        }
+        public async void markAllAnnouncementsRead()
+        {
+            SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");
+            List<Announcement> deviceAnnouncementsQuery = await conn.Table<Announcement>().ToListAsync();
+            foreach (Announcement item in deviceAnnouncementsQuery)
+            {
+                item.Updated = false;
+                await conn.UpdateAsync(item);
+            }
+            AnnouncementList.ItemsSource = deviceAnnouncementsQuery.Where(item => item.Updated == true).OrderByDescending(news => news.Updated).ToList();
         }
 
         private async Task UpdateLiveTile()
@@ -624,6 +656,11 @@ namespace SunovionCompliance
             ConnectionProfile connectionProfile = NetworkInformation.GetInternetConnectionProfile();
             return (connectionProfile != null && connectionProfile.GetNetworkConnectivityLevel() == NetworkConnectivityLevel.InternetAccess);
         }
+        public static bool IsCmsUp()
+        {
+            return true;
+        }
+
 
         void UpdateBadgeWithNumberWithStringManipulation(int number)
         {
@@ -650,5 +687,6 @@ namespace SunovionCompliance
                 //rootPage.NotifyUser("Error loading the xml, check for invalid characters in the input", NotifyType.ErrorMessage);
             }
         }
+
     }
 }
