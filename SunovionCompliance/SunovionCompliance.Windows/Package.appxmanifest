@@ -15,7 +15,7 @@
   </Resources>
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="SunovionCompliance.Windows.App">
-      <m2:VisualElements DisplayName="The Beacon" Square150x150Logo="Assets\Icon\icon 150.png" Square30x30Logo="Assets\SmallLogo.png" Description="The Beacon" ForegroundText="dark" BackgroundColor="#FFDE00">
+      <m2:VisualElements DisplayName="The Beacon" Square150x150Logo="Assets\Icon\icon 150.png" Square30x30Logo="Assets\SmallLogo.png" Description="The Beacon" ForegroundText="dark" BackgroundColor="#d3d3d3">
         <m2:DefaultTile DefaultSize="square150x150Logo">
         </m2:DefaultTile>
         <m2:SplashScreen Image="Assets\SplashScreenImage.png" BackgroundColor="lightGray" />

@@ -1,5 +1,4 @@
-﻿using DT.GoogleAnalytics.Metro;
-using SQLite;
+﻿using SQLite;
 using SunovionCompliance.Model;
 using System;
 using System.Collections.Generic;
@@ -103,12 +102,7 @@ namespace SunovionCompliance
             }
             return "Unexpected result.";
         }
-
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-
-        }
-
+        
         public async Task<string> GetSessionCookie()
         {
             Uri url =  new Uri(CmsURL, "login");
@@ -183,60 +177,53 @@ namespace SunovionCompliance
                             SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");
                             List<PdfInfo> devicePdfDataQuery = await conn.Table<PdfInfo>().ToListAsync();
                             List<Keyword> deviceKeywordQuery = await conn.Table<Keyword>().ToListAsync();
-                            foreach (Keyword deviceItem in deviceKeywordQuery)
-                            {
-                                await conn.DeleteAsync(deviceItem);
-                            }
+                            List<Keyword> newKeywords = new List<Keyword>();
+                            List<Keyword> removeKeywords = new List<Keyword>();
                             foreach (PdfInfo deviceItem in devicePdfDataQuery)
                             {
                                 if (cmsDocWrapper.data.Where(item => item.id == deviceItem.CmsId).Count() == 0)
                                 {
                                     await conn.DeleteAsync(deviceItem);
+                                    removeKeywords.AddRange( deviceKeywordQuery.Where(word => word.cmsId == deviceItem.CmsId).ToList() );
                                 }
                             }
                             foreach (CmsPdf cmsItem in cmsDocWrapper.data)
                             {
-                                SunovionCompliance.Model.PdfInfo newPdfInfo = new PdfInfo();
                                 if (cmsItem.documentName != null && cmsItem.category1 != null)
                                 {
-                                    newPdfInfo = SunovionCompliance.Model.Helper.convertCmsPdfToApp(cmsItem);
-
-                                    if (devicePdfDataQuery.Where(item => item.CmsId == newPdfInfo.CmsId).Count() == 0)
+                                    if (devicePdfDataQuery.Where(item => item.CmsId == cmsItem.id).Count() == 0)
                                     {
-                                        newPdfInfo.DocumentName = newPdfInfo.DocumentName.Trim();
-                                        newPdfInfo.Updated = true;
-                                        var rowAdded = await conn.InsertAsync(newPdfInfo);
-
+                                        PdfInfo newPdfInfo = SunovionCompliance.Model.Helper.convertCmsPdfToApp(cmsItem);
+                                        await conn.InsertAsync(newPdfInfo);
                                         saveCmsFile(newPdfInfo);
+                                        foreach(string keywordValue in cmsItem.keywords){
+                                            newKeywords.Add(new Keyword() { cmsId = cmsItem.id, keyword = keywordValue });
+                                        }
                                     }
                                     else
                                     {
-                                        PdfInfo tempItem = devicePdfDataQuery.Where(item => item.CmsId == newPdfInfo.CmsId).First<PdfInfo>();
-                                        if (DateTime.Parse(tempItem.lastModified).CompareTo(DateTime.Parse(newPdfInfo.lastModified)) < 0)
+                                        PdfInfo oldItem = devicePdfDataQuery.Where(item => item.CmsId == cmsItem.id).First<PdfInfo>();
+                                        if (DateTime.Parse(oldItem.lastModified).CompareTo(DateTime.Parse(cmsItem.lastModified)) < 0)
                                         {
-                                            newPdfInfo.Id = tempItem.Id;
-                                            newPdfInfo.Favorite = tempItem.Favorite;
-                                            newPdfInfo.Updated = true;
-                                            tempItem = newPdfInfo;
-                                            await conn.UpdateAsync(tempItem);
+                                            PdfInfo updatePdfInfo = SunovionCompliance.Model.Helper.convertCmsPdfToApp(cmsItem);
+                                            updatePdfInfo.Id = oldItem.Id;
+                                            updatePdfInfo.Favorite = oldItem.Favorite;
+                                            oldItem = updatePdfInfo;
+                                            await conn.UpdateAsync(updatePdfInfo);
 
-                                            saveCmsFile(newPdfInfo);
+                                            saveCmsFile(updatePdfInfo);
+
+                                            removeKeywords.AddRange(deviceKeywordQuery.Where(oldKey => oldKey.cmsId == cmsItem.id).ToList());
+                                            foreach (string keywordValue in cmsItem.keywords)
+                                                newKeywords.Add(new Keyword() { cmsId = cmsItem.id, keyword = keywordValue });
                                         }
                                     }
-
-                                    foreach (string keywordItem in cmsItem.keywords)
-                                    {
-                                        Keyword newKeyword = new Keyword(){
-                                            cmsId = cmsItem.id,
-                                            keyword = keywordItem
-                                        };
-                                        await conn.InsertAsync(newKeyword);
-                                    }
-                                }
-                                else
-                                {
                                 }
                             }
+                            
+                            await conn.InsertAllAsync(newKeywords);
+                            foreach (Keyword oldKeyword in removeKeywords)
+                                await conn.DeleteAsync(oldKeyword);
                         }
                         catch (Exception e)
                         {
@@ -292,14 +279,7 @@ namespace SunovionCompliance
                             {
                                 await conn.InsertAsync(item);
                             }
-                            else
-                            {
-                                Announcement tempAnnouncment = deviceAnnouncementsQuery.Where(appItem => appItem.CmsId == item.id).First();
-                                item.Updated = tempAnnouncment.Updated;
-                            }
-                            announcements.Add(item);
                         }
-                        announcements = announcements.OrderByDescending(news => news.sortingDate).ToList();
 
                         return data;
                     }
@@ -329,8 +309,9 @@ namespace SunovionCompliance
             }
         }
 
+        // Main workhorse method.
         public async void Page_Loaded(object sender, RoutedEventArgs e)
-        {            
+        {
             String returnValue = "Use this for debugging.";
             returnValue = "Am I connected to the internet? " + IsConnectedToInternet();
             MessageDialog test = new MessageDialog(returnValue);
@@ -339,10 +320,12 @@ namespace SunovionCompliance
             
             // Initialize Database on first open
             returnValue = await UpDatabase();
+            displayCategoryList();              
 
             // Update data from CMS
             if (IsConnectedToInternet())
             {
+                GoogleAnalytics.EasyTracker.GetTracker().SendView("main");
                 try
                 {
                     returnValue = await GetSessionCookie();
@@ -351,71 +334,33 @@ namespace SunovionCompliance
                 }
                 catch(HttpRequestException error){
                     displayError = error;
+                    GoogleAnalytics.EasyTracker.GetTracker().SendException("App was unable to connect to the CMS.", false);
                 }
                 if (displayError != null)
                 {
-                    await new MessageDialog("Unable to connect to CMS, list of Compliance PDFs was not updated.").ShowAsync();
+                    await new MessageDialog("The Content Management System is unavailable, so the list of Compliance documents cannot be updated.").ShowAsync();
                 }
             }
             else
             {
-                test = new MessageDialog("Not connected to the internet, unable to update list of Compliance PDFs.");
+                test = new MessageDialog("Your device is not connected to the Internet, so the list of Compliance documents cannot be updated.");
                 await test.ShowAsync();
             }
             await UpdateLiveTile();
-
-            List<PdfInfo> backendPdfData;
-            // acquire file
-            var _File = await Package.Current.InstalledLocation.GetFileAsync("Assets\\simplePdfInfo.json");
-            // read content
-            string responseText = await Windows.Storage.FileIO.ReadTextAsync(_File);
-            DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(List<PdfInfo>));
-            using (MemoryStream stream = new MemoryStream(Encoding.Unicode.GetBytes(responseText)))
-            {
-                backendPdfData = serializer.ReadObject(stream) as List<PdfInfo>;
-            }
-            
+                        
             try
             {
-                SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");                
+                SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");
                 List<PdfInfo> devicePdfDataQuery = await conn.Table<PdfInfo>().ToListAsync();
-                //foreach (PdfInfo newPdfInfo in backendPdfData)
-                //{
-                //    newPdfInfo.Favorite = false;
-                //    if (devicePdfDataQuery.Where(item => item.DocumentName == newPdfInfo.DocumentName).Count() == 0)
-                //    {
-                //        newPdfInfo.DocumentName = newPdfInfo.DocumentName.Trim();
-                //        var rowAdded = await conn.InsertAsync(newPdfInfo);
-                //    }
-                //    else
-                //    {
-                //        PdfInfo tempItem = newPdfInfo;
-                //        tempItem.Id = devicePdfDataQuery.Where(item => item.DocumentName == newPdfInfo.DocumentName).First<PdfInfo>().Id;
-                //        tempItem.Keyword1 = newPdfInfo.Keyword1.Trim();
-                //        await conn.UpdateAsync(tempItem);
-                //    }
-                //}
-
-                //test = new MessageDialog(newItem.Category1 );
-                //await test.ShowAsync();
-
-                var query2 = conn.Table<CategoryType>();
                 var query3 = conn.Table<PdfInfo>();
                 var query4 = conn.Table<Announcement>();
-                categories = await query2.OrderBy(category => category.Category).ToListAsync();
                 documents = new ObservableCollection<PdfInfo>(await query3.OrderBy(info => info.DocumentName).ToListAsync());
                 announcements = await query4.Where(item => item.Updated == true).OrderByDescending(news => news.Updated).ToListAsync();
 
-                foreach (CategoryType item in categories)
-                {
-                    item.Category = item.Category.ToUpper();
-                }
-                formatDocumentList();
                 // Set updates, favorites after modification to master document list have been made.
                 updates = documents.Where(info => info.Updated == true).ToList();
                 favorites = documents.Where(info => info.Favorite == true).ToList();
 
-                CategoryList.ItemsSource = categories;
                 AnnouncementList.ItemsSource = announcements;
                 DocumentList.ItemsSource = documents;
                 FavoritesList.ItemsSource = favorites;
@@ -429,17 +374,33 @@ namespace SunovionCompliance
             //await test.ShowAsync();
         }
 
-        private void formatDocumentList()
+        private async void displayCategoryList()
         {
-            foreach (PdfInfo item in documents)
+            SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDb.db");
+            var query2 = conn.Table<CategoryType>();
+            categories = await query2.OrderBy(category => category.Category).ToListAsync();
+            foreach (CategoryType item in categories)
             {
-                item.TitlePlusNew = item.DocumentName;
-                item.RevisionPlusDate = "Date: " + System.DateTime.Parse(item.RevisionDate).ToString("MM/dd/yyyy") + " Revision " + item.Revision;
+                item.Category = item.Category.ToUpper();
             }
+            CategoryList.ItemsSource = categories;
+        }
+
+        private PdfInfo formatDocumentList(PdfInfo item)
+        {
+            item.FormattedTitle = item.DocumentName;
+            if (item.DocumentName != null && item.DocumentName.Length > 20)
+            {
+                item.FormattedTitle = item.DocumentName.Substring(20) + "...";
+            }
+            item.RevisionPlusDate = "Date: " + System.DateTime.Parse(item.RevisionDate).ToString("MM/dd/yyyy") + " Revision " + item.Revision;
+
+            return item;
         }
         
         private void DocumentList_ItemClick(object sender, ItemClickEventArgs e)
         {
+            GoogleAnalytics.EasyTracker.GetTracker().SendEvent("User clicked on a document list item.", "userclick", null, 0);
             PdfInfo item = e.ClickedItem as PdfInfo;
             if(item != null && item.DocumentName != null)
             {
@@ -517,6 +478,7 @@ namespace SunovionCompliance
 
         async private void CategoryList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            GoogleAnalytics.EasyTracker.GetTracker().SendEvent("CategorySelectionClick", "userclick", null, 0);
             var SelectedIndex = CategoryList.SelectedIndex;
             CategoryType categortySelected = e.AddedItems[0] as CategoryType;
 
@@ -532,8 +494,6 @@ namespace SunovionCompliance
                 foreach (PdfInfo item in documents)
                 {
                     await Task.Delay(50);
-                    item.TitlePlusNew = item.DocumentName;
-                    item.RevisionPlusDate = "Date: " + System.DateTime.Parse(item.RevisionDate).ToString("MM/dd/yyyy") + " Revision " + item.Revision;
                     tempCollection.Add(item);
                 }
             }
@@ -556,6 +516,7 @@ namespace SunovionCompliance
 
         private async void SearchBox_QuerySubmitted(SearchBox sender, SearchBoxQuerySubmittedEventArgs args)
         {
+            GoogleAnalytics.EasyTracker.GetTracker().SendEvent("User entered search.", "userclick", null, 0);
             // User entered search string.
             string queryString = args.QueryText;
 
@@ -571,11 +532,10 @@ namespace SunovionCompliance
             }
             foreach (Keyword keywordItem in wildcardList)
             {
-                if (keywordItem.keyword.Contains('%') && queryString.Contains(keywordItem.keyword.Trim('%')))
+                if (keywordItem.keyword.Contains('*') && queryString.Contains(keywordItem.keyword.Trim('*')))
                     documents.Add(await conn.Table<PdfInfo>().Where(document => document.CmsId == keywordItem.cmsId).FirstAsync());
             }
 
-            formatDocumentList();
             DocumentList.ItemsSource = documents;
         }
 
@@ -591,22 +551,17 @@ namespace SunovionCompliance
             var query3 = conn.Table<PdfInfo>();
             List<PdfInfo> tempList = await query3.ToListAsync();
             tempList = tempList.Where(info => info.Favorite == true).ToList();
-            foreach (PdfInfo tempItem in tempList)
-            {
-                item.TitlePlusNew = item.DocumentName;
-                tempItem.RevisionPlusDate = "Date: " + System.DateTime.Parse(tempItem.RevisionDate).ToString("MM/dd/yyyy") + " Revision " + tempItem.Revision;
-            }
             FavoritesList.ItemsSource = tempList;
         }
 
         private void ImageToggleButton_Checked(object sender, RoutedEventArgs e)
         {
+            GoogleAnalytics.EasyTracker.GetTracker().SendEvent("User favorited an item.", "userclick", null, 0);
             PdfInfo item = (sender as FrameworkElement).DataContext as PdfInfo;
 
             if (item != null)
             {
                 AddOrRemoveFavorite(item, true);
-                //FavoritesList.ItemsSource = SunovionCompliance.Model.Helper.AddOrRemoveFavorite2(item, true);
             }
 
         }
@@ -618,12 +573,12 @@ namespace SunovionCompliance
             if (item != null)
             {
                 AddOrRemoveFavorite(item, false);
-                //FavoritesList.ItemsSource = SunovionCompliance.Model.Helper.AddOrRemoveFavorite2(item, false);
             }
         }
         
         private void Flyout_Closed(object sender, object e)
         {
+            GoogleAnalytics.EasyTracker.GetTracker().SendEvent("AnnouncementsButtonClick", "userclick", null, 0);
             markAllAnnouncementsRead();
         }
         public async void markAllAnnouncementsRead()
@@ -646,21 +601,12 @@ namespace SunovionCompliance
             if (updateCount > 0)
                 UpdateBadgeWithNumberWithStringManipulation(updateCount);
         }
-
-        private void Button_Click_1(object sender, RoutedEventArgs e)
-        {
-        }
-        
+                
         public static bool IsConnectedToInternet()
         {
             ConnectionProfile connectionProfile = NetworkInformation.GetInternetConnectionProfile();
             return (connectionProfile != null && connectionProfile.GetNetworkConnectivityLevel() == NetworkConnectivityLevel.InternetAccess);
         }
-        public static bool IsCmsUp()
-        {
-            return true;
-        }
-
 
         void UpdateBadgeWithNumberWithStringManipulation(int number)
         {
@@ -686,6 +632,16 @@ namespace SunovionCompliance
                 //OutputTextBlock.Text = string.Empty;
                 //rootPage.NotifyUser("Error loading the xml, check for invalid characters in the input", NotifyType.ErrorMessage);
             }
+        }
+
+        private void UpdatesButtonClick(object sender, RoutedEventArgs e)
+        {
+            GoogleAnalytics.EasyTracker.GetTracker().SendEvent("UpdatesButtonClick", "userclick", null, 0);
+        }
+
+        private void FavoritesButtonClick(object sender, RoutedEventArgs e)
+        {
+            GoogleAnalytics.EasyTracker.GetTracker().SendEvent("FavoritesButtonClick", "userclick", null, 0);
         }
 
     }

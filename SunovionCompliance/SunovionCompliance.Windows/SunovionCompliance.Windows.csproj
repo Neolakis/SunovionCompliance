@@ -128,6 +128,9 @@
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
     </AppxManifest>
+    <Content Include="analytics.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\Adobe_Reader_PDF_Icon.png" />
     <Content Include="Assets\CategoryIcon.png" />
     <Content Include="Assets\CategoryIconSelected.png" />
@@ -172,8 +175,9 @@
     <Content Include="Assets\simplePdfInfo.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="blank.html" />
-    <Content Include="ga.js" />
+    <None Include="analytics.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="SunovionCompliance.Windows_TemporaryKey.pfx" />
   </ItemGroup>
@@ -209,9 +213,11 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="DT.GoogleAnalytics.Metro, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Assets\DT.GoogleAnalytics.Metro.dll</HintPath>
+    <Reference Include="GoogleAnalytics">
+      <HintPath>..\..\packages\GoogleAnalyticsSDK.1.2.12\lib\windows81\GoogleAnalytics.winmd</HintPath>
+    </Reference>
+    <Reference Include="GoogleAnalytics.Core">
+      <HintPath>..\..\packages\GoogleAnalyticsSDK.1.2.12\lib\windows81\GoogleAnalytics.Core.winmd</HintPath>
     </Reference>
     <Reference Include="WinRTXamlToolkit">
       <HintPath>..\..\packages\WinRTXamlToolkit.Windows.1.7.4.0\lib\netcore451\WinRTXamlToolkit.dll</HintPath>

@@ -65,10 +65,8 @@ namespace SunovionCompliance.Model
         public string mimeType { get; set; }
         public string lastModified { get; set; }
 
-        [Ignore]
         public string RevisionPlusDate { get; set; }
-        [Ignore]
-        public string TitlePlusNew { get; set; }
+        public string FormattedTitle { get; set; }
     }
 
     [Table("Announcements")]
@@ -103,22 +101,33 @@ namespace SunovionCompliance.Model
             newPdfInfo.CmsId = cmsItem.id;
             newPdfInfo.Category1 = cmsItem.category1;
             newPdfInfo.Category2 = cmsItem.category2;
-            newPdfInfo.DocumentName = cmsItem.documentName;
+            newPdfInfo.DocumentName = cmsItem.documentName.Trim();
             newPdfInfo.Revision = (cmsItem.revision != null && cmsItem.revision != "" ? cmsItem.revision : "1.0");
             newPdfInfo.RevisionDate = (DateTime.TryParse(cmsItem.revisionDate, out dateValue) ? cmsItem.revisionDate : "1/1/2000");
             newPdfInfo.ShortDescription = (cmsItem.shortDescription != null && cmsItem.shortDescription != "" ? cmsItem.shortDescription : " ");
-            newPdfInfo.Type = (cmsItem.type != null && cmsItem.type != "" ? cmsItem.type : null);
+            //newPdfInfo.Type = (cmsItem.type != null && cmsItem.type != "" ? cmsItem.type : null);
             newPdfInfo.Favorite = false;
+            newPdfInfo.Updated = true;
             newPdfInfo.mimeType = (cmsItem.mimeType != null && cmsItem.mimeType != "" ? cmsItem.mimeType : null);
             newPdfInfo.lastModified = (DateTime.TryParse(cmsItem.lastModified, out dateValue) ? cmsItem.lastModified : "1/1/2000");
 
 
-            newPdfInfo.FileLocation = newPdfInfo.DocumentName;
-            string invalid = new string(Path.GetInvalidFileNameChars() );
-
-            foreach (char c in invalid)
+            newPdfInfo.FormattedTitle = newPdfInfo.DocumentName;
+            if (newPdfInfo.DocumentName != null && newPdfInfo.DocumentName.Length > 65)
             {
-                newPdfInfo.FileLocation = newPdfInfo.FileLocation.Replace(c.ToString(), "");
+                newPdfInfo.FormattedTitle = newPdfInfo.DocumentName.Substring(0,65) + "...";
+            }
+            newPdfInfo.RevisionPlusDate = "Date: " + newPdfInfo.RevisionDate + " Revision " + newPdfInfo.Revision;
+
+            if (newPdfInfo.mimeType != null)
+            {
+                newPdfInfo.FileLocation = newPdfInfo.DocumentName;
+                string invalid = new string(Path.GetInvalidFileNameChars());
+
+                foreach (char c in invalid)
+                {
+                    newPdfInfo.FileLocation = newPdfInfo.FileLocation.Replace(c.ToString(), "");
+                }
             }
 
             return newPdfInfo;

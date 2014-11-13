@@ -6,14 +6,12 @@
     xmlns:mvvm="using:Mvvm"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:a="using:DT.GoogleAnalytics.Metro"
     xmlns:toolkit="using:WinRTXamlToolkit.Controls"
     xmlns:Extensions="using:WinRTXamlToolkit.Controls.Extensions"
     mc:Ignorable="d" 
     Loaded="Page_Loaded">
     <Page.Resources>
         <!-- TODO: DONT FORGET TO UPDATE WebPropertyID -->
-        <a:GoogleAnalyticsSettings x:Key="GoogleAnalytics" WebPropertyId="UA-6404849-1" />
         <Style x:Key="ListViewItemStyle1" TargetType="ListViewItem">
             <Setter Property="FontFamily" Value="{StaticResource ContentControlThemeFontFamily}"/>
             <Setter Property="FontSize" Value="{StaticResource ControlContentThemeFontSize}"/>
@@ -394,7 +392,6 @@
             <RowDefinition Height="*" MinHeight="805"/>
         </Grid.RowDefinitions>
         <!-- Header area -->
-        <!--<MediaElement Name="Clarinet" Source="/Assets/SoundHelix1.mp3" />-->
         <StackPanel Grid.Row="0" Margin="0">
             <Grid Height="175">
                 <Grid.ColumnDefinitions>
@@ -428,8 +425,8 @@
                 <TextBlock Text="DOCUMENT LIBRARY" FontSize="26" Width="510" Height="100" Margin="0,35,0,0" TextAlignment="Center" Grid.Column="0"
                            FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue" />
                 <Line X1="0" Y1="20" Y2="80" Stroke="White" StrokeThickness="2" Grid.Column="1"/>
-                <SearchBox PlaceholderText="Search..."  FontSize="30" Height="60"  Width="Auto" Margin="25,20,25,20" Grid.Column="2"
-                           FocusOnKeyboardInput="False" QuerySubmitted="SearchBox_QuerySubmitted" />
+                <SearchBox x:Name="PdfSearchBox" PlaceholderText="Search..."  FontSize="30" Height="60"  Width="Auto" Margin="25,20,25,20" Grid.Column="2"
+                           QuerySubmitted="SearchBox_QuerySubmitted" />
                 <Line X1="0" Y1="20" Y2="80" Stroke="White" StrokeThickness="2" Grid.Column="3" />
                 <Button Content="Announcements" Style="{StaticResource NavBarButtons}" Grid.Column="4">
                     <Button.Flyout>
@@ -454,7 +451,7 @@
                             </Flyout>
                     </Button.Flyout>
                 </Button>
-                <Button Content="Updates"  Style="{StaticResource NavBarButtons}" Grid.Column="5" Click="Button_Click_1">
+                <Button Content="Updates"  Style="{StaticResource NavBarButtons}" Grid.Column="5" Click="UpdatesButtonClick">
                     <Button.Flyout>
                             <Flyout Placement="Bottom">
                                 <ListView x:Name="UpdatedList" Margin="0" Padding="0,0,0,0" Width="345" HorizontalAlignment="Stretch" 
@@ -480,7 +477,7 @@
                             </Flyout>
                     </Button.Flyout>
                 </Button>
-                <Button Content="Favorites" Style="{StaticResource NavBarButtons}" Grid.Column="6">
+                <Button Content="Favorites" Style="{StaticResource NavBarButtons}" Grid.Column="6" Click="FavoritesButtonClick">
                     <Button.Flyout>
                         <Flyout Placement="Bottom">
                                 <ListView x:Name="FavoritesList" Margin="0" Padding="0,0,0,0" Width="345" HorizontalAlignment="Stretch" 
@@ -566,7 +563,7 @@
                                     <TextBlock Text="NEW! - " FontSize="26" Foreground="Black" Margin="1,11,1,1"
                                                FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"
                                                Visibility="{Binding Updated, Converter={StaticResource TrueToVisibleConverter} }"/>
-                                    <TextBlock Text="{Binding TitlePlusNew}" FontSize="26" Foreground="Black" Margin="1,11,1,1"
+                                    <TextBlock Text="{Binding FormattedTitle}" FontSize="26" Foreground="Black" Margin="1,11,1,1"
                                        FontFamily="Assets/Fonts/HelveticaNeueBold.ttf#Helvetica Neue"/>
                                 </StackPanel>
                                 <TextBlock Text="{Binding ShortDescription}" FontSize="24" Foreground="Black" Margin="1"  
