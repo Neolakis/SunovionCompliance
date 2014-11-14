@@ -1,4 +1,5 @@
-﻿using SQLite;
+﻿using NotificationsExtensions.TileContent;
+using SQLite;
 using SunovionCompliance.Model;
 using System;
 using System.Collections.Generic;
@@ -56,7 +57,7 @@ namespace SunovionCompliance
         public int? LastSelectedIndex;
         public int? CurrentSelectedIndex;
         public LinearGradientBrush CategoryBackgroundBrush;
-        public Uri CmsURL = new Uri("http://webserv.hwpnj.com:8009/");
+        public Uri CmsURL = new Uri("http://webserv.hwpnj.com:8010/");
         //public Uri CmsURL = new Uri("http://ryanday.net:3000/");
         //public Uri CmsURL = new Uri("http://localhost:3000/");
         public Uri CmsURL_Production = new Uri("http://webserv.hwpnj.com:8009/");
@@ -187,12 +188,14 @@ namespace SunovionCompliance
                                     removeKeywords.AddRange( deviceKeywordQuery.Where(word => word.cmsId == deviceItem.CmsId).ToList() );
                                 }
                             }
+                            bool newOrUpdateDocuments = false;
                             foreach (CmsPdf cmsItem in cmsDocWrapper.data)
                             {
                                 if (cmsItem.documentName != null && cmsItem.category1 != null)
                                 {
                                     if (devicePdfDataQuery.Where(item => item.CmsId == cmsItem.id).Count() == 0)
                                     {
+                                        newOrUpdateDocuments = true;
                                         PdfInfo newPdfInfo = SunovionCompliance.Model.Helper.convertCmsPdfToApp(cmsItem);
                                         await conn.InsertAsync(newPdfInfo);
                                         saveCmsFile(newPdfInfo);
@@ -205,6 +208,7 @@ namespace SunovionCompliance
                                         PdfInfo oldItem = devicePdfDataQuery.Where(item => item.CmsId == cmsItem.id).First<PdfInfo>();
                                         if (DateTime.Parse(oldItem.lastModified).CompareTo(DateTime.Parse(cmsItem.lastModified)) < 0)
                                         {
+                                            newOrUpdateDocuments = true;
                                             PdfInfo updatePdfInfo = SunovionCompliance.Model.Helper.convertCmsPdfToApp(cmsItem);
                                             updatePdfInfo.Id = oldItem.Id;
                                             updatePdfInfo.Favorite = oldItem.Favorite;
@@ -218,7 +222,12 @@ namespace SunovionCompliance
                                                 newKeywords.Add(new Keyword() { cmsId = cmsItem.id, keyword = keywordValue });
                                         }
                                     }
+                                    
                                 }
+                            }
+                            if (newOrUpdateDocuments == true)
+                            {
+                                await UpdateLiveTile();
                             }
                             
                             await conn.InsertAllAsync(newKeywords);
@@ -312,9 +321,13 @@ namespace SunovionCompliance
         // Main workhorse method.
         public async void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            BadgeUpdateManager.CreateBadgeUpdaterForApplication().Clear();
+            TileUpdateManager.CreateTileUpdaterForApplication().Clear();
+
             String returnValue = "Use this for debugging.";
             returnValue = "Am I connected to the internet? " + IsConnectedToInternet();
             MessageDialog test = new MessageDialog(returnValue);
+            test.Commands.Add(new UICommand("Continue"));
             HttpRequestException displayError = null;
             //await test.ShowAsync();
             
@@ -338,15 +351,17 @@ namespace SunovionCompliance
                 }
                 if (displayError != null)
                 {
-                    await new MessageDialog("The Content Management System is unavailable, so the list of Compliance documents cannot be updated.").ShowAsync();
+                    test = new MessageDialog("The Content Management System is unavailable, so the list of Compliance documents cannot be updated.");
+                    test.Commands.Add(new UICommand("Continue"));
+                    await test.ShowAsync();
                 }
             }
             else
             {
                 test = new MessageDialog("Your device is not connected to the Internet, so the list of Compliance documents cannot be updated.");
+                test.Commands.Add(new UICommand("Continue"));
                 await test.ShowAsync();
             }
-            await UpdateLiveTile();
                         
             try
             {
@@ -421,7 +436,7 @@ namespace SunovionCompliance
             List<PdfInfo> tempList = await query3.ToListAsync();
             UpdatedList.ItemsSource = tempList.Where(info => info.Updated == true).ToList();
             documents.Where(doc => doc.Id == primaryKey).First().Updated = false;
-            await UpdateLiveTile();
+
             if (Item.mimeType == null || (Item.mimeType != "application/pdf" && Item.mimeType != "audio/mpeg"))
             {
                 await new MessageDialog("There is no file type associated with this entry.").ShowAsync();
@@ -595,11 +610,83 @@ namespace SunovionCompliance
 
         private async Task UpdateLiveTile()
         {
-            BadgeUpdateManager.CreateBadgeUpdaterForApplication().Clear();
             SQLiteAsyncConnection conn = new SQLiteAsyncConnection("ComplianceDB.db");
             int updateCount = await conn.Table<PdfInfo>().Where(document => document.Updated == true).CountAsync();
+            int updateCount2 = await conn.Table<Announcement>().Where(document => document.Updated == true).CountAsync();
             if (updateCount > 0)
+            {
+                UpdateTileWithTextWithStringManipulation(updateCount, updateCount2);
                 UpdateBadgeWithNumberWithStringManipulation(updateCount);
+            }
+        }
+
+        private void UpdateTileWithTextWithStringManipulation(int updateCount, int updateCount2)
+        {
+            // Create a string with the tile template xml.
+            // Note that the version is set to "3" and that fallbacks are provided for the Square150x150 and Wide310x150 tile sizes.
+            // This is so that the notification can be understood by Windows 8 and Windows 8.1 machines as well.
+            string tileXmlString =
+                "<tile>"
+                + "<visual version='3'>"
+                + "<binding template='TileSquare150x150Text04' fallback='TileSquareText04'>"
+                + "<text id='1'>Updated Compliance &amp; Ethics Info Available</text>"
+                + "</binding>"
+                + "<binding template='TileWide310x150Text04' fallback='TileWideText03'>"
+                + "<text id='1'>Updated Compliance &amp; Ethics Info Available</text>"
+                + "</binding>"
+                + "<binding template='TileSquare310x310Text09'>"
+                + "<text id='1'>Updated Compliance &amp; Ethics Info Available</text>"
+                + "</binding>"
+                + "</visual>"
+                + "</tile>";
+
+            // Create a DOM.
+            Windows.Data.Xml.Dom.XmlDocument tileDOM = new Windows.Data.Xml.Dom.XmlDocument();
+
+            // Load the xml string into the DOM.
+            tileDOM.LoadXml(tileXmlString);
+
+            // Create a tile notification.
+            TileNotification tile = new TileNotification(tileDOM);
+
+            // Send the notification to the application? tile.
+            TileUpdateManager.CreateTileUpdaterForApplication().Update(tile);
+
+            //TileUpdateManager.CreateTileUpdaterForApplication().EnableNotificationQueue(true);
+
+            //// Create a notification for the first set of stories with bindings for all 3 tile sizes
+            //ITileSquare310x310Text01 square310x310TileContent1 = TileContentFactory.CreateTileSquare310x310Text01();
+            //square310x310TileContent1.TextHeading.Text = "Updated Compliance & Ethics Information Available";
+            //ITileWide310x150Text03 wide310x150TileContent1 = TileContentFactory.CreateTileWide310x150Text03();
+            //wide310x150TileContent1.TextHeadingWrap.Text = "Updated Compliance & Ethics Information Available";
+            //ITileSquare150x150Text04 square150x150TileContent1 = TileContentFactory.CreateTileSquare150x150Text04();
+            //square150x150TileContent1.TextBodyWrap.Text = "Updated Compliance & Ethics Info Available";
+            //wide310x150TileContent1.Square150x150Content = square150x150TileContent1;
+            //square310x310TileContent1.Wide310x150Content = wide310x150TileContent1;
+
+            //// Set the contentId on the Square310x310 tile
+            //square310x310TileContent1.ContentId = "Main_1";
+
+            //// Tag the notification and send it to the tile
+            //TileNotification tileNotification = square310x310TileContent1.CreateNotification();
+            //tileNotification.Tag = "1";
+
+            //TileUpdateManager.CreateTileUpdaterForApplication().Update(tileNotification);
+
+            //// Kyle's notification
+            //ITileSquare150x150Text04 kyleContent1 = TileContentFactory.CreateTileSquare150x150Text04();
+            //kyleContent1.TextBodyWrap.Text = updateCount + " documents have been updated.";
+            //kyleContent1.ContentId = "Additional_1";
+            //tileNotification = kyleContent1.CreateNotification();
+            //tileNotification.Tag = "2";
+            //TileUpdateManager.CreateTileUpdaterForApplication().Update(tileNotification);
+            //// Kyle's notification
+            //ITileSquare150x150Text04 kyleContent2 = TileContentFactory.CreateTileSquare150x150Text04();
+            //kyleContent2.TextBodyWrap.Text = updateCount2 + " new announcements are available.";
+            //kyleContent2.ContentId = "Additional_2";
+            //tileNotification = kyleContent2.CreateNotification();
+            //tileNotification.Tag = "3";
+            //TileUpdateManager.CreateTileUpdaterForApplication().Update(tileNotification);
         }
                 
         public static bool IsConnectedToInternet()

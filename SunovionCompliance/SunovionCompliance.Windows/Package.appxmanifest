@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest">
-  <Identity Name="ff85e24d-ee40-4e11-a3c5-a343c4c5f83e" Publisher="CN=Kyle" Version="1.0.0.5" />
+  <Identity Name="ff85e24d-ee40-4e11-a3c5-a343c4c5f83e" Publisher="CN=Kyle" Version="1.0.0.6" />
   <Properties>
     <DisplayName>SunovionCompliance.Windows</DisplayName>
     <PublisherDisplayName>Kyle</PublisherDisplayName>
@@ -15,7 +15,7 @@
   </Resources>
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="SunovionCompliance.Windows.App">
-      <m2:VisualElements DisplayName="The Beacon" Square150x150Logo="Assets\Icon\icon 150.png" Square30x30Logo="Assets\SmallLogo.png" Description="The Beacon" ForegroundText="dark" BackgroundColor="#d3d3d3">
+      <m2:VisualElements DisplayName="The Beacon" Square150x150Logo="Assets\Icon\icon 150.png" Square30x30Logo="Assets\SmallLogo.png" Description="The Beacon" ForegroundText="dark" BackgroundColor="#F2F2F2">
         <m2:DefaultTile DefaultSize="square150x150Logo">
         </m2:DefaultTile>
         <m2:SplashScreen Image="Assets\SplashScreenImage.png" BackgroundColor="lightGray" />
