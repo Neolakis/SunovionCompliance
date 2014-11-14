@@ -57,7 +57,7 @@ namespace SunovionCompliance
         public int? LastSelectedIndex;
         public int? CurrentSelectedIndex;
         public LinearGradientBrush CategoryBackgroundBrush;
-        public Uri CmsURL = new Uri("http://webserv.hwpnj.com:8010/");
+        public Uri CmsURL = new Uri("http://webserv.hwpnj.com:8009/");
         //public Uri CmsURL = new Uri("http://ryanday.net:3000/");
         //public Uri CmsURL = new Uri("http://localhost:3000/");
         public Uri CmsURL_Production = new Uri("http://webserv.hwpnj.com:8009/");
