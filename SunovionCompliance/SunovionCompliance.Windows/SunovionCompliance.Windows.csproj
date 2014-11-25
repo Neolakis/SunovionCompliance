@@ -15,8 +15,7 @@
     <FileAlignment>512</FileAlignment>
     <SynthesizeLinkMetadata>true</SynthesizeLinkMetadata>
     <ProjectTypeGuids>{BC8A1FFA-BEE3-4634-8014-F334798102B3};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <PackageCertificateKeyFile>
-    </PackageCertificateKeyFile>
+    <PackageCertificateKeyFile>AppsInTuneCert.pfx</PackageCertificateKeyFile>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundlePlatforms>x86</AppxBundlePlatforms>
     <AppxBundle>Auto</AppxBundle>
@@ -185,6 +184,7 @@
     <None Include="analytics.xsd">
       <SubType>Designer</SubType>
     </None>
+    <None Include="AppsInTuneCert.pfx" />
     <None Include="packages.config" />
     <None Include="SunovionCompliance.Windows_TemporaryKey.pfx" />
   </ItemGroup>

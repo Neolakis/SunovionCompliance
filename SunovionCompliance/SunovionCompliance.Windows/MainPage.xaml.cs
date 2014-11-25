@@ -58,8 +58,7 @@ namespace SunovionCompliance
         public int? CurrentSelectedIndex;
         public LinearGradientBrush CategoryBackgroundBrush;
         public Uri CmsURL = new Uri("http://webserv.hwpnj.com:8009/");
-        //public Uri CmsURL = new Uri("http://ryanday.net:3000/");
-        //public Uri CmsURL = new Uri("http://localhost:3000/");
+        //public Uri CmsURL = new Uri("http://localhost:8009/");
         public Uri CmsURL_Production = new Uri("http://webserv.hwpnj.com:8009/");
         
         public MainPage()
@@ -305,7 +304,13 @@ namespace SunovionCompliance
                 StorageFolder newFolder = await localFolder.CreateFolderAsync("CmsFiles", CreationCollisionOption.OpenIfExists);
                 string filename = newPdfInfo.FileLocation + ".pdf";
 
-                await SaveAsync(fileUri, newFolder, filename);
+                try
+                {
+                    await SaveAsync(fileUri, newFolder, filename);
+                }
+                catch
+                {
+                }
             }
             else if (newPdfInfo.mimeType != null && newPdfInfo.mimeType.Equals("audio/mpeg"))
             {
@@ -314,7 +319,13 @@ namespace SunovionCompliance
                 StorageFolder newFolder = await localFolder.CreateFolderAsync("CmsFiles", CreationCollisionOption.OpenIfExists);
                 string filename = newPdfInfo.FileLocation + ".mp3";
 
-                await SaveAsync(fileUri, newFolder, filename);
+                try
+                {
+                    await SaveAsync(fileUri, newFolder, filename);
+                }
+                catch
+                {
+                }
             }
         }
 
@@ -333,7 +344,9 @@ namespace SunovionCompliance
             
             // Initialize Database on first open
             returnValue = await UpDatabase();
-            displayCategoryList();              
+            displayCategoryList();
+            //test = new MessageDialog(returnValue);
+            //await test.ShowAsync();        
 
             // Update data from CMS
             if (IsConnectedToInternet())
@@ -465,7 +478,9 @@ namespace SunovionCompliance
             }
 
             if (exception != null)
+            {
                 await new MessageDialog("There is no file associated with this entry.").ShowAsync();
+            }
         }
 
         public async Task SaveAsync(Uri fileUri, StorageFolder folder, string fileName)
